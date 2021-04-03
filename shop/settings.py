@@ -26,11 +26,15 @@ SECRET_KEY = 'oz^$8nvg*^74g42cwl64l72f2q35po-vflnsylr184+x^8^w*r'
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
+AUTH_USER_MODEL = 'accounts.CustomUser'
 
 # Application definition
 
 INSTALLED_APPS = [
+    'product',
+    'support',
+    'accounts',
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
