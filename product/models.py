@@ -178,7 +178,6 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
-    # содержимое заказов
     id_good = models.IntegerField(default=1)
     title_good = models.CharField(default='Noname', max_length=300)
     cost = models.FloatField(default=1)
