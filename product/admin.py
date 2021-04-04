@@ -4,3 +4,6 @@ from product.models import *
 
 admin.site.register(Product)
 admin.site.register(Categories)
+admin.site.register(Attributes)
+admin.site.register(ProductAttrs)
+admin.site.register(Brand)
