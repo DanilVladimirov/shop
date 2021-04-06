@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+   {% load static %}
+   <link rel="stylesheet" href="/static/css/style.css">
+   {% block head %}
+   {% endblock %}
+</head>
+<body>
+
+<div class="topnav">
+  <a class="active" href="{% url 'start_page' %}">Home</a>
+  <a href="#about">About</a>
+  <a href="#contact">Contact</a>
+  <div class="search-container">
+    <form action="{% url "search_products_page" %}">
+      <input type="text" placeholder="Search.." name="q">
+      <button type="submit"><img class="search-img" src="/static/search.png"></button>
+    </form>
+  </div>
+</div>
+
+
+{#<ul>#}
+{#  {% if user.is_authenticated %}#}
+{#  <li class="dropdown">#}
+{#      <a href="javascript:void(0)" class="dropbtn">{{ request.user.username }}</a>#}
+{#      <div class="dropdown-content">#}
+{#          <a href="{% url 'create_page' %}">Создать</a>#}
+{#          <a href="{% url 'categories_page' %}">Категории</a>#}
+{#          <a href="{% url 'logout_page' %}">Выйти</a>#}
+{#    </div>#}
+{#  </li>#}
+{#  <li>#}
+{#      <div>#}
+{#          <input type="text">#}
+{#      </div>#}
+{#  </li>#}
+{##}
+{#  {% else %}#}
+{#      <li class="dropdown">#}
+{#        <a href="{% url 'login_page' %}" class="dropbtn">Login</a>#}
+{#      </li>#}
+{#  {% endif %}#}
+{#</ul>#}
+{% block body %}
+
+{% endblock %}
+</body>
+</html>

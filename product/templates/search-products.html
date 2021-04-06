@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/allproducts.css">
+{% endblock %}
+{% block body %}
+<span class="category_name">{{ category.name }}</span><br>
+<div style="display: flex;">
+<div style="width: 200px;background-color: #f5f5f5;border-radius: 10px;margin-left: 10px;padding: 10px;">
+<form method="post" action="">
+    {% csrf_token %}
+    {{ products.brand.all }}
+    {% for attr in category.attributes.all %}
+        {{ attr.name }} <br>
+        {% for val in attr.productattrs_set.values %}
+            {% if val.value in checked %}
+                <input type="checkbox" onchange="this.form.submit()" value="{{ val.value }}" name="{{ attr.name }}" checked>
+                {% else %}
+                <input type="checkbox" onchange="this.form.submit()" value="{{ val.value }}" name="{{ attr.name }}">
+            {% endif %}
+            {{ val.value }}
+            <br>
+        {% endfor %}
+        <hr>
+    {% endfor %}
+</form>
+</div>
+<div style="display: flex;flex-wrap: wrap;margin-left: 40px;">
+{% for product in products %}
+    <div style="width: 220px;height: 250px;display: grid;margin-left: 10px;">
+        {% load static %}
+        <img style="width: 220px;" src="/static/img.jpeg">
+        <a style="text-align: center;" href="#">{{ product.title }}</a>
+    </div>
+{% endfor %}
+</div>
+</div>
+{% endblock %}
