@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block head %}
+     <link rel="stylesheet" href="/static/css/brandpage.css">
+{% endblock %}
+{% block body %}
+    <div class="categories_cards">
+        {% for category in brand.categories.all %}
+                <div class="card">
+                    <div><img src="/static/category_img.jpeg" class="img_category"></div>
+                    <div class="card_label">
+                        <a href="{% url 'search_products_page' %}?b={{ brand.name }}&c={{ category.name }}"><span>{{ category.name }}</span></a>
+                    </div>
+                </div>
+        {% endfor %}
+    </div>
+{% endblock %}

@@ -60,11 +60,19 @@ class Product(models.Model):
         super(Product, self).delete()
 
 
+class KeyWords(models.Model):
+    value = models.CharField(max_length=250)
+
+    def __str__(self):
+        return self.value
+
+
 class Categories(models.Model):
     name = models.CharField(max_length=250, default='Noname cat', unique=True)
     parent_id = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
     state = models.BooleanField(default=True)
     attributes = models.ManyToManyField(Attributes)
+    key_words = models.ManyToManyField(KeyWords)
 
     def __str__(self):
         return self.name
