@@ -60,6 +60,7 @@ class Product(models.Model):
         super(Product, self).delete()
 
 
+# key words for search
 class KeyWords(models.Model):
     value = models.CharField(max_length=250)
 
