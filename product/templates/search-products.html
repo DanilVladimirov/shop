@@ -38,7 +38,7 @@
     <div class="product_card">
         {% load static %}
         <img src="/static/img.jpeg">
-        <a href="#">{{ product.title }}</a>
+        <a href="{% url 'product_page' product.id %}">{{ product.title }}</a>
     </div>
 {% endfor %}
 </div>

@@ -1,9 +1,10 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from product.models import (Categories,
                             Product,
                             ProductAttrs,
                             Attributes,
-                            Brand)
+                            Brand,
+                            CommentsProduct)
 
 
 # for compare strings
@@ -13,6 +14,11 @@ def similar(first, second):
     if len(first) - sum(l1 == l2 for l1, l2 in zip(first, second)) > 3:
         return False
     return True
+
+
+def brand_page(request, brand_id):
+    context = {'brand': Brand.objects.get(id=brand_id)}
+    return render(request, 'brand.html', context)
 
 
 def search_products(request):
@@ -32,8 +38,7 @@ def search_products(request):
             # find by brands
             brand = Brand.objects.filter(name__icontains=search_query)
             if brand:
-                context = {'brand': brand[0]}
-                return render(request, 'brand.html', context)
+                return redirect('brand_page', brand_id=brand[0].id)
             else:
                 # find by keywords
                 categories_all = Categories.objects.all()
@@ -74,3 +79,16 @@ def search_products(request):
         context.update({'checked': list_checked})
         context.update({'products': products})
     return render(request, 'search-products.html', context)
+
+
+def product_page(request, pid):
+    product = Product.objects.get(id=pid)
+    context = {'product': product}
+    action = request.POST.get('action')
+    if request.POST and action == 'addcom':
+        comment = request.POST.get('comment')
+        new_comment = CommentsProduct.objects.create(user=request.user,
+                                                     text=comment)
+        new_comment.save()
+        product.comments.add(new_comment)
+    return render(request, 'product-page.html', context)

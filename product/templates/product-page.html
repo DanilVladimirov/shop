@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/product-page.css">
+    <script src="/static/js/product_tabs.js"></script>
+{% endblock %}
+{% block body %}
+<div><span class="product_title">{{ product.title }}</span></div>
+<div class="tab">
+  <button class="tablinks" onclick="openCity(event, 'Info')" id="default">Info</button>
+  <button class="tablinks" onclick="openCity(event, 'About')">About</button>
+  <button class="tablinks" onclick="openCity(event, 'Comments')">Comments</button>
+</div>
+<div id="Info" class="tabcontent">
+    <div class="product_tab">
+        <div class="product_image_side">
+            <img class="product_img" src="/static/img.jpeg">
+        </div>
+    <div>
+        <div class="buy-information">
+            <div>
+                <span class="product_price">{{ product.price }}</span><br>
+                <span class="product_brand">
+                    Brand:
+                    <a href="{% url 'brand_page' product.brand_id %}">
+                        {{ product.brand.name }}
+                    </a>
+                </span>
+
+            </div>
+            <div class="button-buy-box">
+                <button class="button-buy">Buy</button>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
+
+<div id="About" class="tabcontent">
+    <div>
+        {% for attr in product.attrs.all %}
+            <span class="attr_name">{{ attr.fkey_attr.name }}</span>:
+            <span class="attr_value">{{ attr.value }}</span> <br>
+        {% endfor %}
+    </div>
+</div>
+
+<div id="Comments" class="tabcontent">
+  <div>
+    {% if user.is_authenticated %}
+    <form action="" method="post">
+        {% csrf_token %}
+        <textarea name="comment"></textarea><br>
+        <button name="action" value="addcom" type="submit">Добавить</button>
+    </form>
+    {% endif %}
+        {% for comm in product.comments.all %}
+            <div class="comment_card">
+                <div class="comment_user">{{ comm.user.username }}</div>
+                <div class="comment_text">{{ comm.text }}</div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+    <script>
+        document.getElementById("default").click();
+    </script>
+{% endblock %}

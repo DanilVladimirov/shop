@@ -9,9 +9,7 @@
 <body>
 
 <div class="topnav">
-  <a class="active" href="{% url 'start_page' %}">Home</a>
-  <a href="#about">About</a>
-  <a href="#contact">Contact</a>
+  <a class="active" href="{% url 'start_page' %}"><img src="/static/logo_shop.png"><span>shop</span></a>
   <div class="search-container">
     <form action="{% url "search_products_page" %}">
       <input type="text" placeholder="Search.." name="q">
