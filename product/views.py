@@ -75,6 +75,13 @@ def search_products(request):
                 temp_brand = Brand.objects.get(id=brand)
                 products = products.filter(brand=temp_brand)
                 brands_checked.append(temp_brand)
+        if dict_request.get('price'):
+            price_list = [x if x != '' else 0 for x in dict_request.get('price')]
+            print(price_list)
+            if int(price_list[0]) != 0 or int(price_list[1]) != 0:
+                products = products.filter(price__range=(price_list[0], price_list[1]))
+            context.update({'price_min': price_list[0]})
+            context.update({'price_max': price_list[1]})
         context.update({'brands_checked': brands_checked})
         context.update({'checked': list_checked})
         context.update({'products': products})
