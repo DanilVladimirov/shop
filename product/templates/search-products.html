@@ -3,44 +3,47 @@
     <link rel="stylesheet" href="/static/css/search-products.css">
 {% endblock %}
 {% block body %}
-<span class="category_name">{{ category.name }}</span><br>
-<div class="content">
-<div class="filters">
-<form method="post" action="">
-    {% csrf_token %}
-    {{ products.brand.all }}
-    {% for attr in category.attributes.all %}
-        {{ attr.name }} <br>
-        {% for val in attr.productattrs_set.values %}
-            {% if val.value in checked %}
-                <input type="checkbox" onchange="this.form.submit()" value="{{ val.value }}" name="{{ attr.name }}" checked>
-                {% else %}
-                <input type="checkbox" onchange="this.form.submit()" value="{{ val.value }}" name="{{ attr.name }}">
-            {% endif %}
-            {{ val.value }}
-            <br>
-        {% endfor %}
-        <hr>
-    {% endfor %}
-    {% for brand in brands %}
-        {% if brand in brands_checked %}
-            <input type="checkbox" onchange="this.form.submit()" value="{{ brand.id }}" name="brands" checked>
-        {% else %}
-            <input type="checkbox" onchange="this.form.submit()" value="{{ brand.id }}" name="brands">
-        {% endif %}
-        {{ brand.name }}
-        <br>
-    {% endfor %}
-</form>
-</div>
-<div class="products">
-{% for product in products %}
-    <div class="product_card">
-        {% load static %}
-        <img src="/static/img.jpeg">
-        <a href="{% url 'product_page' product.id %}">{{ product.title }}</a>
+    <span class="category_name">{{ category.name }}</span><br>
+    <div class="content">
+        <div class="filters">
+            <form method="post" action="">
+                {% csrf_token %}
+                {{ products.brand.all }}
+                {% for attr in category.attributes.all %}
+                    {{ attr.name }} <br>
+                    {% for val in attr.productattrs_set.values %}
+                        {% if val.value in checked %}
+                            <input type="checkbox" onchange="this.form.submit()" value="{{ val.value }}"
+                                   name="{{ attr.name }}" checked>
+                        {% else %}
+                            <input type="checkbox" onchange="this.form.submit()" value="{{ val.value }}"
+                                   name="{{ attr.name }}">
+                        {% endif %}
+                        {{ val.value }}
+                        <br>
+                    {% endfor %}
+                    <hr>
+                {% endfor %}
+                {% for brand in brands %}
+                    {% if brand in brands_checked %}
+                        <input type="checkbox" onchange="this.form.submit()" value="{{ brand.id }}" name="brands"
+                               checked>
+                    {% else %}
+                        <input type="checkbox" onchange="this.form.submit()" value="{{ brand.id }}" name="brands">
+                    {% endif %}
+                    {{ brand.name }}
+                    <br>
+                {% endfor %}
+            </form>
+        </div>
+        <div class="products">
+            {% for product in products %}
+                <div class="product_card">
+                    {% load static %}
+                    <img src="/static/img.jpeg">
+                    <a href="{% url 'product_page' product.id %}">{{ product.title }}</a>
+                </div>
+            {% endfor %}
+        </div>
     </div>
-{% endfor %}
-</div>
-</div>
 {% endblock %}
