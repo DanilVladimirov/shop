@@ -36,24 +36,25 @@
                 {% endfor %}
                 Price
                 {% if price_min %}
-                        <input type="number" min="0" value="{{ price_min }}" placeholder="from"  name="price">
-                    {% else %}
-                        <input type="number" min="0" value="0" placeholder="from"  name="price">
+                    <input type="number" min="0" value="{{ price_min }}" placeholder="from" name="price">
+                {% else %}
+                    <input type="number" min="0" value="0" placeholder="from" name="price">
                 {% endif %}
                 {% if price_max %}
-                        <input type="number" min="0" value="{{ price_max }}" placeholder="to"  name="price">
-                    {% else %}
-                        <input type="number" min="0" value="0" placeholder="to"  name="price">
+                    <input type="number" min="0" value="{{ price_max }}" placeholder="to" name="price">
+                {% else %}
+                    <input type="number" min="0" value="0" placeholder="to" name="price">
                 {% endif %}
                 <button onclick="this.form.submit()">set</button>
             </form>
         </div>
         <div class="products">
             {% for product in products %}
-                <div class="product_card">
+                <div class="product_card" onclick="location.href='{% url 'product_page' product.id %}'">
                     {% load static %}
                     <img src="/static/img.jpeg">
                     <a href="{% url 'product_page' product.id %}">{{ product.title }}</a>
+                    <span class="product_card_price">{{ product.price }}</span>
                 </div>
             {% endfor %}
         </div>

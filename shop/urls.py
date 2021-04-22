@@ -21,14 +21,18 @@ from django.views.decorators.cache import cache_control
 from django.contrib.staticfiles.views import serve
 from product.views import (search_products,
                            product_page,
-                           brand_page)
+                           brand_page,
+                           compare_page,
+                           del_category)
 from shop.views import start_page
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('search_products/', search_products, name='search_products_page'),
     path('', start_page, name='start_page'),
     path('product/<int:pid>/', product_page, name='product_page'),
-    path('brand/<int:brand_id>', brand_page, name='brand_page')
+    path('brand/<int:brand_id>', brand_page, name='brand_page'),
+    path('compare/<str:cid>', compare_page, name='compare_page'),
+    path('del_category/', del_category, name='del_category'),
 ]
 urlpatterns += static(settings.STATIC_URL,
                       document_root=settings.STATIC_ROOT)

@@ -170,3 +170,40 @@ body {
     display: inline-grid;
     text-align: center;
 }
+
+.text_empty {
+    text-align: center;
+}
+
+.link_category {
+    font-size: 20px;
+    float: left;
+}
+
+
+.text_top {
+    font-size: 30px;
+}
+
+.img_mic {
+    height: 50px;
+    width: 50px;
+    margin: auto;
+}
+
+.button_compare {
+    margin-top: 11px;
+    margin-left: 11px;
+}
+
+.form_delete_category {
+    float: right;
+}
+.form_delete_category button {
+    padding: 0;
+    border: 0;
+    background: none;
+}
+.img_trash {
+    width: 25px;
+}

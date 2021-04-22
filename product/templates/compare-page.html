@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/compare-page.css">
+{% endblock %}
+{% block body %}
+    <div class="columns">
+        {% if products %}
+            {% for product in products %}
+                <div class="product_column">
+                    {{ product.title }}<br>
+                    {% for attr in product.attrs.all %}
+                        <span class="attr_name">{{ attr.fkey_attr.name }}</span>:
+                        <span class="attr_value">{{ attr.value }}</span> <br>
+                    {% endfor %}
+                    <form action="" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                        <button name="action" value="remove">Remove</button>
+                        <button>Buy</button>
+                    </form>
+                </div>
+            {% endfor %}
+        {% else %}
+            <span class="text_empty">empty.</span>
+        {% endif %}
+    </div>
+{% endblock %}

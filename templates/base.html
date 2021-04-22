@@ -3,6 +3,9 @@
 <head>
     {% load static %}
     <link rel="stylesheet" href="/static/css/style.css">
+    <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="http://code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
     {% block head %}
     {% endblock %}
 </head>
@@ -17,6 +20,7 @@
         </form>
         <button onclick="record()" class="button_voice"><img src="/static/mic.png"></button>
     </div>
+    <button class="button_compare" onclick="location.href='#compare'">compare</button>
 </div>
 {% block body %}
 
@@ -26,8 +30,35 @@
     <div class="popup_body">
         <div class="popup_content">
             <div class="popup_text">
-                <img style="height: 50px;width: 50px;margin: auto" src="/static/mic.png">
+                <img class="img_mic" src="/static/mic.png">
                 speak
+            </div>
+        </div>
+    </div>
+</div>
+<div id="compare" class="popup">
+    <a href="" class="popup_area"></a>
+    <div class="popup_body">
+        <div class="popup_content">
+            <div class="popup_text">
+                <span class="text_top">ur categories to comparison:</span><br>
+                {% if request.session.compare %}
+                    {% for category in request.session.compare %}
+                        <div id="category_{{ category }}">
+                            <a class="link_category" href="{% url 'compare_page' category %}">{{ category }}</a>
+                            <form class="form_delete_category" id="del_category_{{ category }}" method="post">
+                                {% csrf_token %}
+                                <input id="category_id_{{ category }}" type="hidden" value="{{ category }}">
+                                <button onclick="remover(document.getElementById('category_id_{{ category }}').value)">
+                                    <img class="img_trash" src="/static/trash.png">
+                                </button>
+                            </form>
+                            <br>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <span class="text_empty">empty.</span>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -42,6 +73,27 @@
             location.href = "{% url 'search_products_page' %}?q=" + event.results[0][0].transcript;
         }
         recognition.start();
+    }
+</script>
+{# delete category from comparison#}
+<script type="text/javascript">
+    function remover(cid) {
+        var cid_ = "#category_id_" + cid;
+        $(document).on('submit', "#del_category_" + cid, function (e) {
+            e.preventDefault();
+            $.ajax({
+                type: 'POST',
+                url: {% url 'del_category' %},
+                data: {
+                    category: $(cid_).val(),
+                    csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                },
+                success: function () {
+                    var categ = "#category_" + cid;
+                    $(categ).remove();
+                }
+            });
+        });
     }
 </script>
 </body>

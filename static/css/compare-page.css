@@ -1,0 +1,16 @@
+.product_column {
+    border-style: solid;
+    border-left: none;
+    border-bottom: none;
+    border-top: none;
+    border-width: 2px;
+    padding: 10px;
+    margin-right: 10px;
+}
+.columns {
+    display: flex;
+}
+.text_empty {
+    text-align: center;
+    font-size: 40px;
+}

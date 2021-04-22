@@ -1,10 +1,12 @@
-from django.shortcuts import render, redirect
+from django.http import HttpResponse
+from django.shortcuts import redirect
 from product.models import (Categories,
                             Product,
                             ProductAttrs,
                             Attributes,
                             Brand,
                             CommentsProduct)
+from django.shortcuts import render
 
 
 # for compare strings
@@ -98,4 +100,49 @@ def product_page(request, pid):
                                                      text=comment)
         new_comment.save()
         product.comments.add(new_comment)
+    if request.POST and action == 'add_to_compare':
+        compare_list = request.session.get('compare', {})
+        request.session['compare'] = compare_list
+        if product.cid.get().name in compare_list:
+            if product.id not in compare_list.get(product.cid.get().name):
+                temp_values = compare_list[product.cid.get().name]
+                temp_values.append(product.id)
+                compare_list[product.cid.get().name] = temp_values
+        else:
+            compare_list[product.cid.get().name] = [product.id]
+        request.session.modified = True
+        compare_list = request.session.get('compare', {})
+        print(compare_list)
     return render(request, 'product-page.html', context)
+
+
+def compare_page(request, cid):
+    action = request.POST.get('action')
+    compare_list = request.session.get('compare', {})
+    products = []
+    context = {}
+    print(compare_list)
+    if request.POST and action == 'remove':
+        product_id = request.POST['product_id']
+        list_ = compare_list[cid]
+        list_.remove(int(product_id))
+        if len(list_) == 0:
+            del request.session['compare'][cid]
+        else:
+            request.session['compare'][cid] = list_
+    if compare_list.get(cid):
+        products_list = compare_list.get(cid)
+        for product_id in products_list:
+            products.append(Product.objects.get(id=product_id))
+    request.session.modified = True
+    context.update({'products': products})
+    return render(request, 'compare-page.html', context)
+
+
+def del_category(request):
+    compare_list = request.session.get('compare', {})
+    if request.POST:
+        del compare_list[request.POST['category']]
+        request.session['compare'] = compare_list
+        print(compare_list)
+    return HttpResponse('')

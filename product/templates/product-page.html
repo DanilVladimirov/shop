@@ -29,7 +29,12 @@
 
                     </div>
                     <div class="button-buy-box">
-                        <button class="button-buy">Buy</button>
+                        <form action="" method="post">
+                            {% csrf_token %}
+                            <button class="button-buy" name="action" value="add_to_compare">Compare</button>
+                            <button class="button-buy">Buy</button>
+                        </form>
+
                     </div>
                 </div>
             </div>
