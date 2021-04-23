@@ -14,7 +14,6 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.decorators.cache import cache_control
@@ -25,10 +24,16 @@ from product.views import (search_products,
                            compare_page,
                            del_category)
 from shop.views import start_page
+from django.urls import path, include
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('search_products/', search_products, name='search_products_page'),
     path('', start_page, name='start_page'),
+    path('', include('accounts.urls')),
+    path('', include('product.urls')),
+    path('api/', include('api.urls')),
+    path('support/', include('support.urls')),
     path('product/<int:pid>/', product_page, name='product_page'),
     path('brand/<int:brand_id>', brand_page, name='brand_page'),
     path('compare/<str:cid>', compare_page, name='compare_page'),

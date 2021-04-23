@@ -17,15 +17,17 @@ class Ticket(models.Model):
     status = models.CharField(default='new', choices=status_choices, max_length=30)
     date_create = models.DateTimeField(auto_now_add=True)
 
+
     def __str__(self):
         return self.title
 
 
 class TicketMessage(models.Model):
     ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE)
-    message = models.TextField(default='default answer')
+    message = models.TextField(default='')
     support_user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, blank=True, null=True)
     date_msg = models.DateTimeField(auto_now_add=True)
+
 
     def __str__(self):
         return self.ticket
