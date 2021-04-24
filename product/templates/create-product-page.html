@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/create-product-page.css">
+{% endblock %}
+{% block body %}
+    <span class="user_brand">your brand: {{ request.user.brand.name }}</span>
+    <form class="form_select_category" method="post" action="">
+        {% csrf_token %}
+        <span class="text_category">Category:</span>
+        <select class="select_category" name="action" onchange="this.form.submit()">
+            {% if choosed %}
+                <option>{{ choosed.name }}</option>
+            {% else %}
+                <option>Choose</option>
+            {% endif %}
+            {% for category in categories %}
+                <option value="{{ category.id }}">{{ category.name }}</option>
+            {% endfor %}
+        </select>
+    </form>
+    {% if attributes %}
+        <form class="form_create_product" action="{% url 'create_page' %}" method="post">
+            <div class="attributes">
+                {% csrf_token %}
+                <input required name="prod_name" type="text" placeholder="Name">
+                <input required name="prod_price" type="number" placeholder="Price">
+                {% for attr in attributes.all %}
+                    <span>{{ attr.name }}: </span>
+                    <select name="{{ attr.id }}">
+                        {% for value in attr.productattrs_set.all %}
+                            <option value="{{ value.value }}">{{ value.value }}</option>
+                        {% endfor %}
+                    </select>
+                {% endfor %}
+                <input type="hidden" name="cid" value="{{ choosed.id }}">
+            </div>
+            <div class="button_container">
+                <button type="submit">Create</button>
+            </div>
+        </form>
+    {% endif %}
+{% endblock %}

@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'mathfilters',
     'accounts',
+    'shop',
     'product',
     'support',
     'storages',
@@ -122,13 +123,16 @@ USE_L10N = True
 USE_TZ = True
 
 
-#AWS_LOCATION = 'static'
+AWS_LOCATION = 'static'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
-#STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-#STATIC_URL = '/static/'
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# STATIC_URL = '/static/'
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, 'shop/static'),
+# ]
 SESSION_SAVE_EVERY_REQUEST = True
 """STATICFILES_DIRS = [os.path.join(BASE_DIR, 'shop/static')]
 #DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'

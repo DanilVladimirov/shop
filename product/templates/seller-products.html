@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/seller-products.css">
+{% endblock %}
+{% block body %}
+    <div class="content">
+        <div class="all_products">
+            <form method="post" action="">
+                {% csrf_token %}
+                <div onclick="this.form.submit()"
+                     class="create_product">
+                    <button class="button_create" type="submit" name="action" value="create">
+                        <img onclick="this.form.submit()" src="/static/plus.png">
+                    </button>
+                </div>
+            </form>
+            {% for product in products %}
+                <div class="product_card">
+                    <div>
+                        <img class="product_image" src="/static/img.jpeg"></div>
+                    <div>
+                        <div>
+                            <a class="product_title" href="{% url 'product_page' product.id %}">{{ product.title }}</a>
+                        </div>
+                        <div class="product_forms">
+                            <form class="form_edit" method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="pid" value="{{ product.id }}">
+                                <button name="action" value="delete">delete</button>
+                            </form>
+                            <form class="form_delete" method="post" action="">
+                                {% csrf_token %}
+                                <input type="hidden" name="pid" value="{{ product.id }}">
+                                <button name="action" value="edit_menu">edit</button>
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        {% if product_edit %}
+            <div>
+                <div class="side_edit">
+                    <form class="form_create_product" action="" method="post">
+                        <div class="attributes">
+                            {% csrf_token %}
+                            <input required value="{{ product_edit.title }}" name="prod_name" type="text"
+                                   placeholder="Name">
+                            <input required value="{{ product_edit.price }}" name="prod_price" type="number"
+                                   placeholder="Price">
+                            {% load product_tags %}
+                            {% for attr in attributes.all %}
+                                <span>{{ attr.name }}: </span>
+                                <select name="{{ attr.id }}">
+                                    <option value="{{ product_edit|get_value:attr.id }}">{{ product_edit|get_value:attr.id }}</option>
+                                    {% for value in attr.productattrs_set.all %}
+                                        <option value="{{ value.value }}">{{ value.value }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% endfor %}
+                            <input type="hidden" name="pid" value="{{ product_edit.id }}">
+                        </div>
+                        <div class="button_container">
+                            <button type="submit" name="action" value="edit">Edit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+        {% if categories or attributes and not product_edit %}
+            <div>
+            <div class="side_create">
+            <form class="form_select_category" method="post" action="">
+                {% csrf_token %}
+                <span class="text_category">Category:</span>
+                <select class="select_category" name="cid" onchange="this.form.submit()">
+                    {% if choosed %}
+                        <option>{{ choosed.name }}</option>
+                    {% else %}
+                        <option>Choose</option>
+                    {% endif %}
+                    {% for category in categories %}
+                        <option value="{{ category.id }}">{{ category.name }}</option>
+                    {% endfor %}
+                    <input type="hidden" name="action" value="choosed_category">
+                </select>
+            </form>
+            {% if attributes %}
+                <form class="form_create_product" action="" method="post">
+                    <div class="attributes">
+                        {% csrf_token %}
+                        <input required name="prod_name" type="text" placeholder="Name">
+                        <input required name="prod_price" type="number" placeholder="Price">
+                        {% for attr in attributes.all %}
+                            <span>{{ attr.name }}: </span>
+                            <select name="{{ attr.id }}">
+                                {% for value in attr.productattrs_set.all %}
+                                    <option value="{{ value.value }}">{{ value.value }}</option>
+                                {% endfor %}
+                            </select>
+                        {% endfor %}
+                        <input type="hidden" name="cid" value="{{ choosed.id }}">
+                    </div>
+                    <div class="button_container">
+                        <button type="submit" name="action" value="create_product">Create</button>
+                    </div>
+                </form>
+            {% endif %}
+        {% endif %}
+        </div>
+        </div>
+    </div>
+{% endblock %}

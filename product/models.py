@@ -26,6 +26,7 @@ class PriceMatrixItem(models.Model):
 
 class Attributes(models.Model):
     name = models.CharField(max_length=200)
+    title = models.CharField(max_length=200, default="title")
 
     def __str__(self):
         return f'name: {self.name}'
@@ -33,7 +34,7 @@ class Attributes(models.Model):
 
 class ProductAttrs(models.Model):
     fkey_attr = models.ForeignKey(Attributes, on_delete=models.CASCADE, default=None)
-    value = models.CharField(max_length=200)
+    value = models.CharField(max_length=200, default=None)
 
     def __str__(self):
         return f'value: {self.value}'
@@ -67,7 +68,7 @@ class Product(models.Model):
     cid = models.ManyToManyField('Categories', related_name='category')
     date_add = models.DateTimeField(auto_now_add=True)
     date_edit = models.DateTimeField(auto_now=True)
-    photo = models.FileField(default=None, null=True)
+    photo = models.FileField(default=None, null=True, blank=True)
     attrs = models.ManyToManyField(ProductAttrs)
     comments = models.ManyToManyField(CommentsProduct, blank=True)
 

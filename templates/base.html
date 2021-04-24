@@ -21,6 +21,10 @@
         <button onclick="record()" class="button_voice"><img src="/static/mic.png"></button>
     </div>
     <button class="button_compare" onclick="location.href='#compare'">compare</button>
+    {% load shop_tags %}
+    {% if request.user|has_group:"Seller" %}
+        <button class="button_compare" onclick="location.href='{% url 'seller_products' %}'">my products</button>
+    {% endif %}
 </div>
 {% block body %}
 

@@ -152,6 +152,69 @@ def del_category(request):
     return HttpResponse('')
 
 
+def seller_products(request):
+    if not request.user.groups.filter(name='Seller').exists():
+        return redirect('start_page')
+    action = request.POST.get('action')
+    context = {}
+    products = Product.objects.filter(author=request.user)
+    context.update({'products': products})
+    if request.POST and action == 'edit_menu':
+        product_to_edit = Product.objects.get(id=request.POST.get('pid'))
+        attributes = Categories.objects.get(id=product_to_edit.cid.get().id).attributes.all()
+        context.update({'product_edit': product_to_edit})
+        context.update({'attributes': attributes})
+    if request.POST and action == 'edit':
+        brand = Brand.objects.get(id=request.user.brand.id)
+        category = Product.objects.get(id=request.POST.get('pid')).cid.get()
+        attributes = category.attributes.values()
+        product = Product.objects.filter(id=request.POST.get('pid'))
+        product.update(title=request.POST.get('prod_name'),
+                       brand=brand,
+                       price=float(request.POST.get('prod_price')),
+                       author=request.user)
+        list_attrs = []
+        for attr in attributes:
+            prod_attr = ProductAttrs.objects.get(fkey_attr_id=attr['id'], value=request.POST.get(str(attr['id'])))
+            list_attrs.append(prod_attr)
+        product[0].attrs.set(list_attrs)
+
+    if request.POST and action == 'create':
+        categories = Categories.objects.all()
+        context.update({'categories': categories})
+    if request.POST and action == 'choosed_category':
+        attributes = Categories.objects.get(id=request.POST.get('cid')).attributes.all()
+        context.update({'choosed': Categories.objects.get(id=request.POST.get('cid'))})
+        context.update({'attributes': attributes})
+        categories = Categories.objects.all()
+        context.update({'categories': categories})
+    if request.POST and action == 'create_product':
+        attributes = Categories.objects.get(id=request.POST.get('cid')).attributes.values()
+        category = Categories.objects.get(id=request.POST.get('cid'))
+        brand = Brand.objects.get(id=request.user.brand.id)
+        product = Product.objects.create(title=request.POST.get('prod_name'),
+                                         brand=brand,
+                                         price=float(request.POST.get('prod_price')),
+                                         author=request.user)
+        product.cid.set([category])
+        if category not in brand.categories.all():
+            brand.categories.add(category)
+        for attr in attributes:
+            prod_attr = ProductAttrs.objects.filter(fkey_attr_id=attr['id'],
+                                                    value=request.POST.get(str(attr['id'])))
+            if len(prod_attr) > 0:
+                product.attrs.add(prod_attr[0])
+            else:
+                prod_attr = ProductAttrs.objects.create(fkey_attr_id=attr['id'],
+                                                        value=request.POST.get(str(attr['id'])))
+                prod_attr.save()
+                product.attrs.add(prod_attr)
+        product.save()
+    if request.POST and action == 'delete':
+        Product.objects.get(id=request.POST.get('pid')).delete()
+    return render(request, 'seller-products.html', context)
+
+
 def shop_main_page(request):
     categories = Categories.objects.all()
     return render(request, 'product/main_page.html', context={'category':categories})
@@ -160,6 +223,7 @@ def shop_main_page(request):
 def category_page(request, pk):
     category = Product.objects.filter(cid=pk)
     return render(request, 'product/category_page.html', context={'products':category})
+
 
 def product_page_new(request, pk):
     context = {}
@@ -345,7 +409,7 @@ def edit_invoice(request, pk):
             goods = order.orderitem_set.all()
         
         elif mode == 'add_good':
-            product = get_object_or_404(Product, pk = id_good)
+            product = get_object_or_404(Product, pk = pk)
             item_info = {
                 'product':product,
                 'order':order,
@@ -353,8 +417,7 @@ def edit_invoice(request, pk):
             OrderItem.add_item(item_info)
         order.recalc_order()
     context['goods'] = goods
-                
-            
+
     return render(request, template, context=context)
 
 

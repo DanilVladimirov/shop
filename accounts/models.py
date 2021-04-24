@@ -13,9 +13,8 @@ class CustomUser(AbstractUser):
     email = models.EmailField(_('email address'), unique=True)
     balance = models.FloatField(default=0)
     id_tg = models.IntegerField(blank = True, null=True)
-
-
-
+    brand = models.ForeignKey('product.Brand', on_delete=models.CASCADE,
+                              blank=True, null=True)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 

@@ -19,14 +19,29 @@
     margin-left: 40px;
 }
 .product_card {
-    width: 220px;
-    height: 250px;
+
     display: grid;
     margin-left: 10px;
+    margin-bottom: 10px;
+
+    border-radius: 10px;
+    padding: 10px;
+    border-style: solid;
+    border-width: 1px;
+}
+.product_card:hover {
+    border-width: 2px;
+    border-radius: 15px;
 }
 .product_card img {
-    width: 220px;
+    border-radius: 10px 10px 0 0;
+    width: 140px;
+    margin: auto;
 }
 .product_card a {
     text-align: center;
+    text-decoration: none;font-size: 20px;
+}
+.product_card_price {
+    font-size: 20px;text-align: center;
 }
