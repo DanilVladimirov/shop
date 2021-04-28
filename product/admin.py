@@ -1,6 +1,6 @@
 from django.contrib import admin
 from product.models import *
-from product.tasks import stop_promotion
+from product.tasks import stop_promotion, start_promotion
 from shop.celery import app
 # Register your models here.
 
@@ -10,27 +10,21 @@ class PromotionsAdmin(admin.ModelAdmin):
         super().save_related(request, form, formsets, change)
         obj = form.save(commit=False)
         if len(PromotionsTasks.objects.filter(promotion=obj)) == 0:
-            task = stop_promotion.apply_async(args=(obj.id,), eta=obj.date_end)
-            promotion_task = PromotionsTasks.objects.create(promotion=obj, task_id=task.task_id)
-            promotion_task.save()
+            task_stop = stop_promotion.apply_async(args=(obj.id,), eta=obj.date_end)
+            task_start = start_promotion.apply_async(args=(obj.id,), eta=obj.date_start)
+            promotion_task_stop = PromotionsTasks.objects.create(promotion=obj,
+                                                                 task_end_id=task_stop.task_id,
+                                                                 task_start_id=task_start.task_id)
+            promotion_task_stop.save()
         else:
-            promotion_task = PromotionsTasks.objects.get(promotion=obj)
-            app.control.revoke(promotion_task.task_id, terminate=True, signal='SIGTERM')
-            task = stop_promotion.apply_async(args=(obj.id,), eta=obj.date_end)
-            promotion_task.task_id = task.task_id
-            promotion_task.save()
-        if obj.categories.all().exists():
-            for category in obj.categories.all():
-                products = Product.objects.filter(cid=category)
-                for product in products:
-                    product.old_price = product.price
-                    product.price = product.price - (product.price * obj.discount_percentage)
-                    product.save()
-        if obj.products.all().exists():
-            for product in obj.products.all():
-                product.old_price = product.price
-                product.price = product.price - (product.price * obj.discount_percentage)
-                product.save()
+            promotion_task_stop = PromotionsTasks.objects.get(promotion=obj)
+            app.control.revoke(promotion_task_stop.task_end_id, terminate=True, signal='SIGTERM')
+            app.control.revoke(promotion_task_stop.task_start_id, terminate=True, signal='SIGTERM')
+            task_stop = stop_promotion.apply_async(args=(obj.id,), eta=obj.date_end)
+            task_start = start_promotion.apply_async(args=(obj.id,), eta=obj.date_start)
+            promotion_task_stop.task_end_id = task_stop.task_id
+            promotion_task_stop.task_start_id = task_start.task_id
+            promotion_task_stop.save()
 
 
 admin.site.register(Product)

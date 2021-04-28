@@ -153,7 +153,8 @@ class Promotions(models.Model):
 
 class PromotionsTasks(models.Model):
     promotion = models.ForeignKey(Promotions, on_delete=models.CASCADE, null=True)
-    task_id = models.TextField(default="")
+    task_end_id = models.TextField(default="")
+    task_start_id = models.TextField(default="")
 
 
 class Delivery(models.Model):

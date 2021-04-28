@@ -21,3 +21,21 @@ def stop_promotion(*args, **kwargs):
             product.save()
     promotion.delete()
     return f'deleted promotion "{name_promotion}"'
+
+
+@app.task
+def start_promotion(*args, **kwargs):
+    promotion = Promotions.objects.get(id=args[0])
+    if promotion.categories.all().exists():
+        for category in promotion.categories.all():
+            products = Product.objects.filter(cid=category)
+            for product in products:
+                product.old_price = product.price
+                product.price = product.price - (product.price * promotion.discount_percentage)
+                product.save()
+    if promotion.products.all().exists():
+        for product in promotion.products.all():
+            product.old_price = product.price
+            product.price = product.price - (product.price * promotion.discount_percentage)
+            product.save()
+    return f'started promotion "{promotion.title}"'
