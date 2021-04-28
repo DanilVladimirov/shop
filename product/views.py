@@ -246,8 +246,8 @@ def product_page_new(request, pk):
         except SubEditPrice.DoesNotExist:
             context['is_sub_edit_price']=False
 
-
     return render(request, 'product/product_page.html', context)
+
 
 def select_curr(request):
     if request.method == 'POST':
@@ -329,9 +329,9 @@ def checkout_page(request):
                 subscribe.subscribe_create_order(request.user.id, new_order.id, new_order.get_absolute_url())
             for good in basket.values():
                 item = {
-                    'product':Product.objects.get(pk=good['id']),
-                    'order':new_order,
-                    'qty':good['qty'],
+                    'product': Product.objects.get(pk=good['id']),
+                    'order': new_order,
+                    'qty': good['qty'],
                 }
                 OrderItem.add_item(item)
                 new_order.recalc_order()
@@ -339,6 +339,7 @@ def checkout_page(request):
             return redirect('invoice_page', new_order.id)  
 
     return render(request, 'product/checkout_page.html', context={'products':basket, 'total_cost':total_cost, 'all_delivery':delivery})
+
 
 def get_invoice(request, pk):
     template = 'product/invoice_page.html'
@@ -409,7 +410,7 @@ def edit_invoice(request, pk):
             goods = order.orderitem_set.all()
         
         elif mode == 'add_good':
-            product = get_object_or_404(Product, pk = pk)
+            product = get_object_or_404(Product, pk=pk)
             item_info = {
                 'product':product,
                 'order':order,
@@ -464,7 +465,6 @@ def wishlist(request):
         wishlist = Wishlist.objects.filter(user = request.user)
         context['products'] = convert_html.my_wishlist(wishlist) 
         return render(request, template, context)
-
 
 
 def subeditprice(request):

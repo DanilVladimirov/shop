@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework.authtoken',
     'rest_framework',
+    'django_celery_results',
     'mathfilters',
     'accounts',
     'shop',
@@ -159,7 +160,7 @@ STATICFILES_DIRS = [
 ]
 STATIC_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
 STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-DEFAULT_FILE_STORAGE = 'shop.storage_backends.MediaStorage'
+# DEFAULT_FILE_STORAGE = 'shop.storage_backends.MediaStorage'
 
 
 REST_FRAMEWORK = {
@@ -176,3 +177,16 @@ TOKEN_EXPIRED_AFTER_SECONDS = 60*60*24*365*3
 
 
 mimetypes.add_type("text/css", ".css", True)
+
+# celery
+CELERY_TIMEZONE = "Europe/Kiev"
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_RESULT_BACKEND = 'django-db'
+# media
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

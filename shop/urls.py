@@ -24,7 +24,9 @@ from product.views import (search_products,
                            compare_page,
                            del_category,
                            seller_products)
-from shop.views import start_page
+
+from shop.views import (start_page,
+                        promotion_page)
 from django.urls import path, include
 
 urlpatterns = [
@@ -39,9 +41,11 @@ urlpatterns = [
     path('brand/<int:brand_id>', brand_page, name='brand_page'),
     path('compare/<str:cid>', compare_page, name='compare_page'),
     path('del_category/', del_category, name='del_category'),
-    path('seller_products/', seller_products, name='seller_products')
+    path('seller_products/', seller_products, name='seller_products'),
+    path('promo/<int:promo_id>', promotion_page, name='promotion_page')
 ]
 urlpatterns += static(settings.STATIC_URL,
                       document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.STATIC_URL,
                       view=cache_control(no_cache=True, must_revalidate=True)(serve))
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -19,14 +19,18 @@
             <div>
                 <div class="buy-information">
                     <div>
-                        <span class="product_price">{{ product.price }}</span><br>
+                        {% if product.old_price != 0 %}
+                            <span>old price: {{ product.old_price }}</span><br>
+                            <span class="product_price red">{{ product.price }}</span><br>
+                        {% else %}
+                            <span class="product_price">{{ product.price }}</span><br>
+                        {% endif %}
                         <span class="product_brand">
                     Brand:
                     <a href="{% url 'brand_page' product.brand_id %}">
                         {{ product.brand.name }}
                     </a>
                 </span>
-
                     </div>
                     <div class="button-buy-box">
                         <form action="" method="post">

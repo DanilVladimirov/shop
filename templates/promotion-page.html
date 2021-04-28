@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/search-products.css">
+{% endblock %}
+{% block body %}
+    <div class="products">
+            {% for product in products %}
+                <div class="product_card" onclick="location.href='{% url 'product_page' product.id %}'">
+                    {% load static %}
+                    <img src="/static/img.jpeg">
+                    <a href="{% url 'product_page' product.id %}">{{ product.title }}</a>
+                    {% if product.old_price != 0 %}
+                        <span style="text-align: center">old price: {{ product.old_price }}</span>
+                        <span class="product_card_price red">{{ product.price }}</span>
+                    {% else %}
+                        <span class="product_card_price">{{ product.price }}</span>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+{% endblock %}

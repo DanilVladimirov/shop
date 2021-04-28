@@ -19,11 +19,9 @@
     margin-left: 40px;
 }
 .product_card {
-
     display: grid;
     margin-left: 10px;
     margin-bottom: 10px;
-
     border-radius: 10px;
     padding: 10px;
     border-style: solid;
