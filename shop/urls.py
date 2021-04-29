@@ -42,7 +42,7 @@ urlpatterns = [
     path('compare/<str:cid>', compare_page, name='compare_page'),
     path('del_category/', del_category, name='del_category'),
     path('seller_products/', seller_products, name='seller_products'),
-    path('promo/<int:promo_id>', promotion_page, name='promotion_page')
+    path('promo/<int:promo_id>', promotion_page, name='promotion_page'),
 ]
 urlpatterns += static(settings.STATIC_URL,
                       document_root=settings.STATIC_ROOT)

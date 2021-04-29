@@ -15,6 +15,7 @@ class CustomUser(AbstractUser):
     id_tg = models.IntegerField(blank = True, null=True)
     brand = models.ForeignKey('product.Brand', on_delete=models.CASCADE,
                               blank=True, null=True)
+    subscription_email = models.BooleanField(default=False)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 

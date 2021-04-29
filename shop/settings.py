@@ -128,7 +128,6 @@ AWS_LOCATION = 'static'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
-
 # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # STATIC_URL = '/static/'
 # STATICFILES_DIRS = [
@@ -142,7 +141,7 @@ STATIC_URL = 'https://project-geek.s3.us-east-2.amazonaws.com/'
 STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'"""
 django_heroku.settings(locals())
 
-prod_db  =  dj_database_url.config(conn_max_age=500)
+prod_db=dj_database_url.config(conn_max_age=500)
 DATABASES['default'].update(prod_db)
 
 
@@ -190,3 +189,9 @@ CELERY_RESULT_BACKEND = 'django-db'
 # media
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# mail
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'aktezorshop@gmail.com'
+EMAIL_HOST_PASSWORD = 'aktezorgagaga'
+EMAIL_PORT = 587
