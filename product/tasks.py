@@ -51,7 +51,7 @@ def start_promotion(*args, **kwargs):
     users = CustomUser.objects.all()
     # send mail
     separator = ", "
-    text = f'The promotion is valid for these products: {separator.join(list_products)}' \
+    text = f'The promotion is valid for these products: {separator.join(list_products)}.' \
            f'\nPromotion ends: {promotion.date_end}'
     html_content = render_to_string('mail_promotion_template.html', {'title': promotion.title,
                                                                      'text': text,
