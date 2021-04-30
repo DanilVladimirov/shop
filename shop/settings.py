@@ -18,7 +18,7 @@ TG_TOKEN = '1729761851:AAHRK8aaNbAMuOj0qis-xOeB9p_rHZu1TPg'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 SITE_URL = '127.0.0.1:8000'
-ALLOWED_HOSTS = ['project-geek.herokuapp.com', '127.0.0.1']
+ALLOWED_HOSTS = ['aktezor.herokuapp.com', '127.0.0.1']
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
 # Application definition
