@@ -3,7 +3,6 @@
     <link rel="stylesheet" href="/static/css/search-products.css">
 {% endblock %}
 {% block body %}
-    {% if products %}
         <span class="category_name">{{ category.name }}</span><br>
         <div class="content">
             <div class="filters">
@@ -65,10 +64,4 @@
                 {% endfor %}
             </div>
         </div>
-    {% else %}
-        <div style="text-align: center;">
-            <span style="text-align: center;font-size: 40px;">Empty.</span>
-        </div>
-    {% endif %}
-
 {% endblock %}
