@@ -14,8 +14,6 @@
     padding: 10px;
 }
 .products {
-    display: flex;
-    flex-wrap: wrap;
     margin-left: 40px;
 }
 .product_card {
