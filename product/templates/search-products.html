@@ -3,65 +3,72 @@
     <link rel="stylesheet" href="/static/css/search-products.css">
 {% endblock %}
 {% block body %}
-    <span class="category_name">{{ category.name }}</span><br>
-    <div class="content">
-        <div class="filters">
-            <form method="post" action="">
-                {% csrf_token %}
-                {{ products.brand.all }}
-                {% for attr in category.attributes.all %}
-                    {{ attr.name }} <br>
-                    {% for val in attr.productattrs_set.values %}
-                        {% if val.value in checked %}
-                            <input type="checkbox" onchange="this.form.submit()" value="{{ val.value }}"
-                                   name="{{ attr.name }}" checked>
+    {% if products %}
+        <span class="category_name">{{ category.name }}</span><br>
+        <div class="content">
+            <div class="filters">
+                <form method="post" action="">
+                    {% csrf_token %}
+                    {{ products.brand.all }}
+                    {% for attr in category.attributes.all %}
+                        {{ attr.name }} <br>
+                        {% for val in attr.productattrs_set.values %}
+                            {% if val.value in checked %}
+                                <input type="checkbox" onchange="this.form.submit()" value="{{ val.value }}"
+                                       name="{{ attr.name }}" checked>
+                            {% else %}
+                                <input type="checkbox" onchange="this.form.submit()" value="{{ val.value }}"
+                                       name="{{ attr.name }}">
+                            {% endif %}
+                            {{ val.value }}
+                            <br>
+                        {% endfor %}
+                        <hr>
+                    {% endfor %}
+                    {% for brand in brands %}
+                        {% if brand in brands_checked %}
+                            <input type="checkbox" onchange="this.form.submit()" value="{{ brand.id }}" name="brands"
+                                   checked>
                         {% else %}
-                            <input type="checkbox" onchange="this.form.submit()" value="{{ val.value }}"
-                                   name="{{ attr.name }}">
+                            <input type="checkbox" onchange="this.form.submit()" value="{{ brand.id }}" name="brands">
                         {% endif %}
-                        {{ val.value }}
+                        {{ brand.name }}
                         <br>
                     {% endfor %}
-                    <hr>
-                {% endfor %}
-                {% for brand in brands %}
-                    {% if brand in brands_checked %}
-                        <input type="checkbox" onchange="this.form.submit()" value="{{ brand.id }}" name="brands"
-                               checked>
+                    Price
+                    {% if price_min %}
+                        <input type="number" min="0" value="{{ price_min }}" placeholder="from" name="price">
                     {% else %}
-                        <input type="checkbox" onchange="this.form.submit()" value="{{ brand.id }}" name="brands">
+                        <input type="number" min="0" value="0" placeholder="from" name="price">
                     {% endif %}
-                    {{ brand.name }}
-                    <br>
-                {% endfor %}
-                Price
-                {% if price_min %}
-                    <input type="number" min="0" value="{{ price_min }}" placeholder="from" name="price">
-                {% else %}
-                    <input type="number" min="0" value="0" placeholder="from" name="price">
-                {% endif %}
-                {% if price_max %}
-                    <input type="number" min="0" value="{{ price_max }}" placeholder="to" name="price">
-                {% else %}
-                    <input type="number" min="0" value="0" placeholder="to" name="price">
-                {% endif %}
-                <button onclick="this.form.submit()">set</button>
-            </form>
-        </div>
-        <div class="products">
-            {% for product in products %}
-                <div class="product_card" onclick="location.href='{% url 'product_page' product.id %}'">
-                    {% load static %}
-                    <img src="/static/img.jpeg">
-                    <a href="{% url 'product_page' product.id %}">{{ product.title }}</a>
-                    {% if product.old_price != 0 %}
-                        <span style="text-align: center">old price: {{ product.old_price }}</span>
-                        <span class="product_card_price red">{{ product.price }}</span>
+                    {% if price_max %}
+                        <input type="number" min="0" value="{{ price_max }}" placeholder="to" name="price">
                     {% else %}
-                        <span class="product_card_price">{{ product.price }}</span>
+                        <input type="number" min="0" value="0" placeholder="to" name="price">
                     {% endif %}
-                </div>
-            {% endfor %}
+                    <button onclick="this.form.submit()">set</button>
+                </form>
+            </div>
+            <div class="products">
+                {% for product in products %}
+                    <div class="product_card" onclick="location.href='{% url 'product_page' product.id %}'">
+                        {% load static %}
+                        <img src="/static/img.jpeg">
+                        <a href="{% url 'product_page' product.id %}">{{ product.title }}</a>
+                        {% if product.old_price != 0 %}
+                            <span style="text-align: center">old price: {{ product.old_price }}</span>
+                            <span class="product_card_price red">{{ product.price }}</span>
+                        {% else %}
+                            <span class="product_card_price">{{ product.price }}</span>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
         </div>
-    </div>
+    {% else %}
+        <div style="text-align: center;">
+            <span style="text-align: center;font-size: 40px;">Empty.</span>
+        </div>
+    {% endif %}
+
 {% endblock %}

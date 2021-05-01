@@ -16,7 +16,7 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 SECRET_KEY = '!%c$$78v36_ah)-1j8(hxg6u@*fk2*jnut5m$*z&fr^=jsdq%u'
 TG_TOKEN = '1729761851:AAHRK8aaNbAMuOj0qis-xOeB9p_rHZu1TPg'
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 SITE_URL = '127.0.0.1:8000'
 ALLOWED_HOSTS = ['aktezor.herokuapp.com', '127.0.0.1']
 AUTH_USER_MODEL = 'accounts.CustomUser'
@@ -181,11 +181,11 @@ mimetypes.add_type("text/css", ".css", True)
 CELERY_TIMEZONE = "Europe/Kiev"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
-CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_BROKER_URL = 'redis://:UnXMlKDUIPqJ9pYJXEnqNzFeR52bBLsP@redis-13885.c266.us-east-1-3.ec2.cloud.redislabs.com:13885'
+CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-CELERY_RESULT_BACKEND = 'django-db'
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 # media
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

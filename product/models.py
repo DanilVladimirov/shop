@@ -10,6 +10,7 @@ from django.utils.crypto import get_random_string
 from accounts.subscribe import subscribe_edit_price
 from django.contrib import admin
 
+
 class PriceMatrix(models.Model):
     name = models.CharField(max_length=200, default='Name matrix', verbose_name='Название')
 
