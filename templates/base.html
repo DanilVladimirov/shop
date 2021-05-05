@@ -12,7 +12,15 @@
 <body>
 
 <div class="topnav">
-    <a class="active" href="{% url 'start_page' %}"><img src="/static/logo_shop.png"><span>shop</span></a>
+    <a class="active left_side" href="{% url 'start_page' %}"><img src="/static/logo_shop.png"><span>shop</span></a>
+    <a class="active right_side" {% if request.user.is_authenticated %} href="{% url 'start_page' %}" {% else %}
+       href="{% url 'login' %}" {% endif %}>
+        <img src="/static/userlogo.png">
+        {% if request.user.is_authenticated %}
+            <span>{{ request.user.first_name }}</span>
+        {% endif %}
+        <span>login<span>
+    </a>
     <div class="search-container">
         <form action="{% url "search_products_page" %}">
             <input id="id_search_query" type="text" placeholder="Search.." name="q">
@@ -21,6 +29,7 @@
         <button onclick="record()" class="button_voice"><img src="/static/mic.png"></button>
     </div>
     <button class="button_compare" onclick="location.href='#compare'">compare</button>
+
     <button class="button_compare" onclick="location.href='{% url 'coco' %}'">auth with contact</button>
     <span>{{ request.user.email }}</span>
     {% load shop_tags %}

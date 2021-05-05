@@ -14,7 +14,6 @@ body {
 }
 
 .topnav a {
-    float: left;
     color: black;
     text-align: center;
     text-decoration: none;
@@ -223,4 +222,10 @@ body {
     opacity: 1;
     visibility: visible;
     transition: all 0.2s ease;
+}
+.right_side {
+    float: right;
+}
+.left_side {
+    float: left;
 }

@@ -11,7 +11,6 @@ from accounts.forms import *
 from django.contrib.auth.decorators import login_required
 
 
-
 class SignUpView(generic.CreateView):
     model = User
     template_name = 'accounts/signup.html'
@@ -22,7 +21,6 @@ class SignUpView(generic.CreateView):
         form_valid = super().form_valid(form)
         email = form.cleaned_data['email']
         password = form.cleaned_data['password']
-        #form_valid.groups.add(Group.objects.get(name=User))
         aut_user = authenticate(email=email, password=password)     
         login(self.request, aut_user)
         return form_valid
@@ -46,6 +44,7 @@ class LoginView(LoginView):
         uid = self.request.user.id 
         subscribe.subscribe_authorization(uid, ssid, ip)
         return HttpResponseRedirect(self.get_success_url())
+
 
 class UserLogoutView(LogoutView):
     next_page = reverse_lazy('main_page')
