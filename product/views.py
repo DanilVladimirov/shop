@@ -36,26 +36,33 @@ def search_products(request):
     brands = None
     brands_checked = []
     if search_query:
-        products = Product.objects.filter(title__icontains=search_query)
-        if products:
-            category = products[0].cid.get()
+        category = Categories.objects.filter(name__icontains=search_query)
+        if category.exists():
+            category = Categories.objects.filter(name__icontains=search_query)[0]
+            products = Product.objects.filter(cid=category)
             brands = category.brand_set.all()
         else:
-            # find by brands
-            brand = Brand.objects.filter(name__icontains=search_query)
-            if brand:
-                return redirect('brand_page', brand_id=brand[0].id)
+            products = Product.objects.filter(title__icontains=search_query)
+            if products:
+                category = products[0].cid.get()
+                brands = category.brand_set.all()
             else:
-                # find by keywords
-                categories_all = Categories.objects.all()
-                for category_ in categories_all:
-                    key_words = category_.key_words.all()
-                    list_words = [w.value.lower() for w in key_words]
-                    for word in list_words:
-                        if similar(search_query.lower().rstrip().lstrip(), word):
-                            category = category_
-                            products = Product.objects.filter(cid=category)
-                            brands = category.brand_set.all()
+                # find by brands
+                brand = Brand.objects.filter(name__icontains=search_query)
+                if brand:
+                    return redirect('brand_page', brand_id=brand[0].id)
+                else:
+                    # find by keywords
+                    categories_all = Categories.objects.all()
+                    for category_ in categories_all:
+                        key_words = category_.key_words.all()
+                        list_words = [w.value.lower() for w in key_words]
+                        for word in list_words:
+                            if similar(search_query.lower().rstrip().lstrip(), word):
+                                category = category_
+                                products = Product.objects.filter(cid=category)
+                                brands = category.brand_set.all()
+
     # if we have get parameter 'b'
     if search_brand:
         brand = Brand.objects.get(name__icontains=search_brand)

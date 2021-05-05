@@ -207,3 +207,20 @@ body {
 .img_trash {
     width: 25px;
 }
+.categories_popup {
+    background-color: #1b6d85;
+    z-index: 1;
+    width: 200px;
+    height: 200px;
+    position: fixed;
+    margin-top: -36px;
+    border-radius: 10px;
+    margin-left: 92px;
+    opacity: 0;
+    visibility: hidden;
+}
+.categories_popup:target{
+    opacity: 1;
+    visibility: visible;
+    transition: all 0.2s ease;
+}

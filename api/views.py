@@ -186,5 +186,5 @@ class ProductAPI(APIView):
         filter_product = services.ProductServices.filter_product(filter_attr)
         product = Product.objects.filter(**filter_product)
         serializer = serializers.ProductSerializer(product, many=True)
-        context = {'success':serializer.data}
+        context = {'success': serializer.data}
         return Response(context)

@@ -10,3 +10,6 @@ def get_value(product, attr_id):
     else:
         value = 'none'
     return value
+
+
+
