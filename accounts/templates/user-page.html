@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/user-page.css">
+{% endblock %}
+{% block body %}
+    <div class="control_panel_div">
+        <button onclick="location.href='{% url 'logout' %}'" class="btn_signout">sign out</button>
+    </div>
+{% endblock %}

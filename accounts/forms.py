@@ -1,11 +1,9 @@
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from django.contrib.auth.models import User
+from django.contrib.auth.forms import AuthenticationForm
 from accounts.models import *
 
 
 class AuthUserForm(AuthenticationForm, forms.ModelForm):
-
     class Meta:
         model = CustomUser
         fields = ['username', 'password']
@@ -15,10 +13,11 @@ class AuthUserForm(AuthenticationForm, forms.ModelForm):
         for field in self.fields:
             self.fields[field].widget.attrs['class'] = 'form-control'
 
+
 class RegisterUserForm(forms.ModelForm):
     class Meta:
         model = CustomUser
-        fields = ['email', 'password', 'username']
+        fields = ['email', 'username', 'password']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -32,8 +31,8 @@ class RegisterUserForm(forms.ModelForm):
             user.save()
         return user
 
+
 class SubscribeForm(forms.ModelForm):
     class Meta:
         model = Subscribe
         exclude = ['user']
-        

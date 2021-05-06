@@ -16,7 +16,7 @@ class SignUpView(generic.CreateView):
     model = CustomUser()
     template_name = 'accounts/signup.html'
     form_class = RegisterUserForm
-    success_url = reverse_lazy('main_page')
+    success_url = reverse_lazy('start_page')
 
     def form_valid(self, form):
         form_valid = super().form_valid(form)
@@ -32,7 +32,7 @@ class LoginView(LoginView):
     model = User
     template_name = 'accounts/login.html'
     form_class = AuthUserForm
-    success_url = reverse_lazy('main_page')
+    success_url = reverse_lazy('start_page')
 
     def form_valid(self, form):
         """Security check complete. Log the user in."""
@@ -48,7 +48,7 @@ class LoginView(LoginView):
         return HttpResponseRedirect(self.get_success_url())
 
 class UserLogoutView(LogoutView):
-    next_page = reverse_lazy('main_page')
+    next_page = reverse_lazy('start_page')
 
 
 def is_user_exist(request):
@@ -56,8 +56,13 @@ def is_user_exist(request):
         data = request.POST
         is_user = CustomUser.is_user_email(data['mail'])
         data_response = {'result': is_user}
-        return HttpResponse(json.dumps(data_response), content_type = 'application/json')
+        return HttpResponse(json.dumps(data_response), content_type='application/json')
 
+
+
+def user_page(request):
+    context = {}
+    return render(request, 'user-page.html', context)
 
 def mailing_promotions(request):
     template = 'accounts/promotions.html'
@@ -84,3 +89,4 @@ def subscribes(request):
             form.save()
             return HttpResponseRedirect(request.path_info)
     return render(request, template, context)
+

@@ -13,13 +13,12 @@
 
 <div class="topnav">
     <a class="active left_side" href="{% url 'start_page' %}"><img src="/static/logo_shop.png"><span>shop</span></a>
-    <a class="active right_side" {% if request.user.is_authenticated %} href="{% url 'start_page' %}" {% else %}
+    <a class="active right_side" {% if request.user.is_authenticated %} href="{% url 'user_page' %}" {% else %}
        href="{% url 'login' %}" {% endif %}>
         <img src="/static/userlogo.png">
-        {% if request.user.is_authenticated %}
-            <span>{{ request.user.first_name }}</span>
+        {% if not request.user.is_authenticated %}
+            <span>sign in</span>
         {% endif %}
-        <span>login<span>
     </a>
     <div class="search-container">
         <form action="{% url "search_products_page" %}">
@@ -31,7 +30,7 @@
     <button class="button_compare" onclick="location.href='#compare'">compare</button>
 
     <button class="button_compare" onclick="location.href='{% url 'coco' %}'">auth with contact</button>
-    <span>{{ request.user.email }}</span>
+
     {% load shop_tags %}
     {% if request.user|has_group:"Seller" %}
         <button class="button_compare" onclick="location.href='{% url 'seller_products' %}'">my products</button>

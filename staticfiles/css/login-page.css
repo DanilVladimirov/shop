@@ -1,0 +1,76 @@
+.form-control {
+    width: 400px;
+    height: 40px;
+    border-radius: 5px;
+    border: none;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+}
+
+.form-control:hover {
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.login_div {
+    width: 500px;
+    margin: auto;
+    text-align: center;
+    background-color: #e9e9e9;
+    border-radius: 10px;
+    padding: 30px;
+    margin-top: 60px;
+}
+
+.btn_login {
+    background-color: #2196F3;
+    border: none;
+    width: 100px;
+    margin: auto;
+    height: 40px;
+    border-radius: 10px;
+    color: white;
+    font-size: 20px;
+}
+
+.separator {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: darkgray;
+    padding: 20px;
+}
+
+.separator::before,
+.separator::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid darkgray;
+}
+
+.separator:not(:empty)::before {
+    margin-right: .25em;
+}
+
+.separator:not(:empty)::after {
+    margin-left: .25em;
+}
+
+.btn_social {
+    width: 35px;
+    height: 35px;
+    font-size: 20px;
+}
+
+.top_text {
+    text-align: left;
+    width: 400px;
+    margin: auto;
+    color: darkgray;
+    font-size: 30px;
+    margin-bottom: 10px;
+}
+
+.label_error {
+    color: #e04f4f;
+}

@@ -1,0 +1,26 @@
+.btn_signout {
+    background-color: #f05146;
+    border: none;
+    border-radius: 5px;
+    width: 100px;
+    height: 40px;
+    color: white;
+    font-size: 20px;
+    transition: all 0.3s ease;
+}
+
+.btn_signout:hover {
+    color: #f05146;
+    background-color: white;
+    border: solid #f05146;
+    transition: all 0.3s ease;
+}
+
+.control_panel_div {
+    background-color: #e9e9e9;
+    width: 1000px;
+    border-radius: 10px;
+    margin: auto;
+    margin-top: 60px;
+    padding: 30px;
+}
