@@ -16,7 +16,7 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 SECRET_KEY = '!%c$$78v36_ah)-1j8(hxg6u@*fk2*jnut5m$*z&fr^=jsdq%u'
 TG_TOKEN = '1729761851:AAHRK8aaNbAMuOj0qis-xOeB9p_rHZu1TPg'
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 SITE_URL = '127.0.0.1:8000'
 ALLOWED_HOSTS = ['aktezor.herokuapp.com', '127.0.0.1']
 AUTH_USER_MODEL = 'accounts.CustomUser'
