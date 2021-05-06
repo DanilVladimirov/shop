@@ -24,51 +24,86 @@
             <div>
                 <div class="buy-information">
                     <div>
-                        {% if product.old_price != 0 %}
-                            <span>old price: {{ product.old_price }}</span><br>
-                            <span class="product_price red">{{ product.price|mul:rate_select_currency }} {{ disp_select_currency }}</span>
-                            <br>
-                        {% else %}
-                            <span class="product_price">{{ product.price|mul:rate_select_currency }} {{ disp_select_currency }}</span>
-                            <br>
-                        {% endif %}
-                        <span class="product_brand">
-                    Brand:
-                    <a href="{% url 'brand_page' product.brand_id %}">
-                        {{ product.brand.name }}
-                    </a>
-                </span>
-                    </div>
-                    <div class="button-buy-box">
-                        <form action="" method="post">
-                            {% csrf_token %}
-                            <button class="button-buy" name="action" value="add_to_compare">Compare</button>
-                            <button class="button-buy" type='submit' onclick="add2basket('{{ product.id }}')" id="btn_add2basket">Buy</button>
-                            {% if request.user.is_authenticated %}
-                                {% if is_wishlist %}
-                                    <button style="display: block" class="button-unlike" type="button"
-                                            onclick="wishlist('{{ product.id }}', 'del')"
-                                            id='btn_wishlist'>
-                                        unlike
-                                    </button>
-                                    <button style="display: none" class="button-like" type="button"
-                                            onclick="wishlist('{{ product.id }}', 'add')"
-                                            id='btn_wishlist'>
-                                        like
+                        <div>
+                            {% if product.stock == 0 %}
+                                <span style="color: darkgray;font-size: 30px;">out of stock :(</span><br>
+                                {% if is_sub_active_product %}
+                                    <button class="button-available" type="button" onclick="subactivateproduct('{{ product.id }}', 'del')"
+                                            id='btn_subactivateproduct'>don't inform about the availability
                                     </button>
                                 {% else %}
-                                    <button style="display: none" class="button-unlike" type="button"
-                                            onclick="wishlist('{{ product.id }}', 'del')"
-                                            id='btn_wishlist'>
-                                        unlike
-                                    </button>
-                                    <button style="display: block" class="button-like" type="button"
-                                            onclick="wishlist('{{ product.id }}', 'add')"
-                                            id='btn_wishlist'>
-                                        like
+                                    <button class="button-available" type="button" onclick="subactivateproduct('{{ product.id }}', 'add')"
+                                            id='btn_subactivateproduct'>inform about the availability
                                     </button>
                                 {% endif %}
+                            {% else %}
+                                {% if product.old_price != 0 %}
+                                    <span>old price: {{ product.old_price }}</span><br>
+                                    <span class="product_price red">{{ product.price|mul:rate_select_currency }} {{ disp_select_currency }}</span>
+                                    <br>
+                                {% else %}
+                                    <span class="product_price">{{ product.price|mul:rate_select_currency }} {{ disp_select_currency }}</span>
+                                    <br>
+                                {% endif %}
                             {% endif %}
+                            <span class="product_brand">
+                                Brand:
+                                <a href="{% url 'brand_page' product.brand_id %}">
+                                    {{ product.brand.name }}
+                                </a>
+                            </span>
+                        </div>
+
+                    </div>
+                    <div class="button-buy-box">
+                        <form action="" method="post" style="width: 200px;">
+
+                            {% csrf_token %}
+                            <button class="button-buy" name="action" value="add_to_compare">Compare</button>
+                            <button class="button-buy" type='submit' onclick="add2basket('{{ product.id }}')"
+                                    id="btn_add2basket">Buy
+                            </button>
+                            <div>
+                                {% if request.user.is_authenticated %}
+                                    {% if is_wishlist %}
+                                        <button style="display: table-row" class="button-unlike" type="button"
+                                                onclick="wishlist('{{ product.id }}', 'del')"
+                                                id='btn_wishlist'>
+                                            unlike
+                                        </button>
+                                        <button style="display: none" class="button-like" type="button"
+                                                onclick="wishlist('{{ product.id }}', 'add')"
+                                                id='btn_wishlist'>
+                                            like
+                                        </button>
+                                    {% else %}
+                                        <button style="display: none" class="button-unlike" type="button"
+                                                onclick="wishlist('{{ product.id }}', 'del')"
+                                                id='btn_wishlist'>
+                                            unlike
+                                        </button>
+                                        <button style="display: table-row" class="button-like" type="button"
+                                                onclick="wishlist('{{ product.id }}', 'add')"
+                                                id='btn_wishlist'>
+                                            like
+                                        </button>
+                                    {% endif %}
+                                    {% if is_sub_edit_price %}
+                                        <button class="button-buy" style="width: 120px;" type="button"
+                                                onclick="subeditprice('{{ product.id }}', 'del')"
+                                                id='btn_subeditprice'>
+                                            Unfollow price
+                                        </button>
+                                    {% else %}
+                                        <button class="button-buy" style="width: 120px;" type="button"
+                                                onclick="subeditprice('{{ product.id }}', 'add')"
+                                                id='btn_subeditprice'>
+                                            Follow price
+                                        </button>
+                                    {% endif %}
+
+                                    </div>
+                                {% endif %}
                         </form>
                     </div>
                 </div>
@@ -122,49 +157,10 @@
     </script>
 
     {% if product.file_digit %}{{ product.file_digit.url }}{% endif %}
-    <br><br>
 
-    <div class="form_add_basket">
-        <input type="number" step='1' min=1 name='cnt' start='1' value="1" id="cnt_product">
-        <button type='submit' onclick="add2basket('{{ product.id }}')" id="btn_add2basket">Добавить в корзину</button>
-        <br><br>
-        {% if request.user.is_authenticated %}
-            {% if is_wishlist %}
-                <button type="button" onclick="wishlist('{{ product.id }}', 'del')" id='btn_wishlist'>Удалить из
-                    вишлиста
-                </button>
-            {% else %}
-                <button type="button" onclick="wishlist('{{ product.id }}', 'add')" id='btn_wishlist'>Добавить в
-                    вишлист
-                </button>
-            {% endif %} <br> <br>
-            {% if is_sub_edit_price %}
-                <div>Вы подписаны на изменение цены</div>
-                <button type="button" onclick="subeditprice('{{ product.id }}', 'del')" id='btn_subeditprice'>
-                    Отписаться
-                </button>
-            {% else %}
-                <button type="button" onclick="subeditprice('{{ product.id }}', 'add')" id='btn_subeditprice'>
-                    Подписаться на изменение цены
-                </button>
-            {% endif %} <br><br>
-            {% if product.stock == 0 %}
-                {% if is_sub_active_product %}
-                    <div>Мы сообщим, когда товар будет в наличии</div>
-                    <button type="button" onclick="subactivateproduct('{{ product.id }}', 'del')"
-                            id='btn_subactivateproduct'>Не сообщать, когда товар будет в наличии.
-                    </button>
-                {% else %}
-                    <button type="button" onclick="subactivateproduct('{{ product.id }}', 'add')"
-                            id='btn_subactivateproduct'>Сообщить, когда товар будет в наличии.
-                    </button>
-                {% endif %}
-            {% endif %} <br><br>
-        {% endif %}
-    </div>
     </form>
     {% if viewed_products %}
-        <br><br><h2>Просмотренные товары:</h2>
+        <h2>Просмотренные товары:</h2>
         <div class="card-group">
             {{ viewed_products|safe }}
         </div>
@@ -214,21 +210,19 @@
                 cache: false,
                 success: function (data) {
                     if (data.success) {
-                        var $item = $('<span class="msg">' + data.success.msg + '</span>');
+
                         if (type_act == 'add') {
                             document.getElementsByClassName('button-like')[0].style.setProperty("display", "none");
-                            document.getElementsByClassName('button-unlike')[0].style.setProperty("display", "block");
+                            document.getElementsByClassName('button-unlike')[0].style.setProperty("display", "table-row");
                             {#$('#btn_wishlist').attr('onclick', 'wishlist({{product.id}}, "del")');#}
                             {#$('#btn_wishlist').text('Удалить из вишлиста');#}
                         } else if (type_act == 'del') {
-                            document.getElementsByClassName('button-like')[0].style.setProperty("display", "block");
+                            document.getElementsByClassName('button-like')[0].style.setProperty("display", "table-row");
                             document.getElementsByClassName('button-unlike')[0].style.setProperty("display", "none");
                             {#$('#btn_wishlist').attr('onclick', 'wishlist({{product.id}}, "add")');#}
                             {#$('#btn_wishlist').text('Добавить в вишлист');#}
                         }
-                        $item.appendTo('.form_add_basket').delay(4000).slideUp(500, function () {
-                            $item.remove();
-                        });
+
                     }
                 }
             });
@@ -242,17 +236,15 @@
                 cache: false,
                 success: function (data) {
                     if (data.success) {
-                        var $item = $('<span class="msg">' + data.success.msg + '</span>');
+
                         if (type_act == 'add') {
                             $('#btn_subeditprice').attr('onclick', 'subeditprice({{product.id}}, "del")');
-                            $('#btn_subeditprice').text('Отписаться');
+                            $('#btn_subeditprice').text('Unfollow price');
                         } else if (type_act == 'del') {
                             $('#btn_subeditprice').attr('onclick', 'subeditprice({{product.id}}, "add")');
-                            $('#btn_subeditprice').text('Подписаться на изменение цен.');
+                            $('#btn_subeditprice').text('Follow price');
                         }
-                        $item.appendTo('.form_add_basket').delay(4000).slideUp(500, function () {
-                            $item.remove();
-                        });
+
                     }
                 }
             });
@@ -266,17 +258,15 @@
                 cache: false,
                 success: function (data) {
                     if (data.success) {
-                        var $item = $('<span class="msg">' + data.success.msg + '</span>');
+
                         if (type_act == 'add') {
                             $('#btn_subactivateproduct').attr('onclick', 'subactivateproduct({{product.id}}, "del")');
-                            $('#btn_subactivateproduct').text('Не сообщать, когда товар будет в наличии.');
+                            $('#btn_subactivateproduct').text("don't inform about the availability");
                         } else if (type_act == 'del') {
                             $('#btn_subactivateproduct').attr('onclick', 'subactivateproduct({{product.id}}, "add")');
-                            $('#btn_subactivateproduct').text('Сообщить, когда товар будет в наличии.');
+                            $('#btn_subactivateproduct').text("inform about the availability");
                         }
-                        $item.appendTo('.form_add_basket').delay(4000).slideUp(500, function () {
-                            $item.remove();
-                        });
+
                     }
                 }
             });
@@ -291,10 +281,7 @@
                 cache: false,
                 success: function (data) {
                     if (data.success) {
-                        var $item = $('<span class="msg">' + data.success + '</span>');
-                        $item.appendTo('#block_rating').delay(4000).slideUp(500, function () {
-                            $item.remove();
-                        });
+
                         if (data.new_avg) {
                             $('#rating').text('Raiting: ' + data.new_avg)
                         } else {

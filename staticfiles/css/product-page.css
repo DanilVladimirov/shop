@@ -105,6 +105,7 @@
 .button-buy-box {
     margin-inline-start: auto;
     align-self: center;
+    text-align: right;
 }
 
 .product_title {
@@ -186,4 +187,12 @@
     background-color: #2196F3;
     transition: all 0.3s ease;
     color: white;
+}
+
+.button-available {
+    width: 210px;
+    padding: 5px;
+    border-radius: 10px;
+    border: solid;
+    margin: 10px 0px 10px 0px;
 }
