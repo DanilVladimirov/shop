@@ -11,7 +11,6 @@ from accounts.forms import *
 from django.contrib.auth.decorators import login_required
 
 
-
 class SignUpView(generic.CreateView):
     model = CustomUser()
     template_name = 'accounts/signup.html'
@@ -22,11 +21,11 @@ class SignUpView(generic.CreateView):
         form_valid = super().form_valid(form)
         email = form.cleaned_data['email']
         password = form.cleaned_data['password']
-        aut_user = authenticate(email=email, password=password)     
+        aut_user = authenticate(email=email, password=password)
         aut_user.groups.add(Group.objects.get(name='User'))
         login(self.request, aut_user)
         return form_valid
-    
+
 
 class LoginView(LoginView):
     model = User
@@ -43,9 +42,10 @@ class LoginView(LoginView):
         else:
             ip = self.request.META.get('REMOTE_ADDR')
         ssid = self.request.session.session_key
-        uid = self.request.user.id 
+        uid = self.request.user.id
         subscribe.subscribe_authorization(uid, ssid, ip)
         return HttpResponseRedirect(self.get_success_url())
+
 
 class UserLogoutView(LogoutView):
     next_page = reverse_lazy('start_page')
@@ -59,10 +59,10 @@ def is_user_exist(request):
         return HttpResponse(json.dumps(data_response), content_type='application/json')
 
 
-
 def user_page(request):
     context = {}
     return render(request, 'user-page.html', context)
+
 
 def mailing_promotions(request):
     template = 'accounts/promotions.html'
@@ -78,7 +78,7 @@ def mailing_promotions(request):
 def subscribes(request):
     template = 'accounts/subscribe.html'
     context = {}
-    subs, _ = Subscribe.objects.get_or_create(user = request.user)
+    subs, _ = Subscribe.objects.get_or_create(user=request.user)
     form = SubscribeForm(instance=subs)
     context['form'] = form
     if request.method == 'POST':
@@ -89,4 +89,3 @@ def subscribes(request):
             form.save()
             return HttpResponseRedirect(request.path_info)
     return render(request, template, context)
-
