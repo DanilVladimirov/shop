@@ -1,8 +1,18 @@
-{% extends 'base_new.html' %}
+{% extends 'base.html' %}
 {% load mathfilters %}
 
 {% block content %}
-    Status order - {{order.status}}
+    Статус заказа - {{order.get_status_display}}<br>
+    Курьер - {% if order.courier %}{{order.courier.email}}{%else%} не задан {%endif%} <br>
+    Промо - {% if order.promo %}{{order.promo}}{%else%} нет {%endif%} <br>
+    Телефон - {% if order.promo %}{{order.promo}}{%else%} нет {%endif%} <br>
+    ФИО - {% if order.full_name %}{{order.full_name}}{%else%} нет {%endif%} <br>
+    Комментарий - {% if order.notes %}{{order.notes}}{%else%} нет {%endif%} <br>
+    Способ доставки - {{ order.delivery_method }} <br>
+    {% if delivery_department %}{{delivery_department|safe}} <br><br> {%endif%}
+    Стоимость доставки - {{ order.cost_of_delivery }} <br>
+
+    
     <table class="table">
         <thead>
           <tr>
@@ -15,7 +25,7 @@
     
             {%for good in goods%}
             <tr>
-            <td><a href="{% url 'product_page' good.id_good %}" target="_blank">{{good.title_good}}</a></td>
+            <td><a href="{% url 'product_page' good.product.id %}" target="_blank">{{good.title_good}}</a></td>
             <td>{{good.cost|mul:order.rate_currency}}</td>
             <td>{{good.qty}}</td>
             <td></td>

@@ -5,39 +5,72 @@
 {% block body %}
     <script>var scrf_token = $('{%csrf_token%}').val(); </script>
     <div class="login_div">
-        <div class="label_error" id='error_msg'></div>
+    <div class="label_error" id='error_msg'></div>
+    <form method="post">
+        {% csrf_token %}
+        <input placeholder="email" type="email" name="email" maxlength="254" class="form-control" required=""
+               id="id_email">
+        <input placeholder="login" type="text" name="username" maxlength="100" class="form-control"
+               id="id_username">
+        <input placeholder="password" type="text" name="password" maxlength="128" class="form-control" required=""
+               id="id_password">
+        <button type="submit" class="btn_login">sign up</button>
+    </form>
+    <div class="separator"><span>already have account? <a
+            href="{% url 'login' %}">sign in</a></span></div>
+    <div>
+    </div>
+    <script>
+        $('#id_email').change(function () {
+            var email = $(this).val();
+            $.ajax({
+                type: 'POST',
+                url: '{% url "is_user_exist" %}',
+                data: {
+                    'csrfmiddlewaretoken': scrf_token,
+                    'mail': email,
+                },
+                dataType: 'json',
+                cache: false,
+                success: function (data) {
+                    if (data.result) {
+                        $('#error_msg').text('email already exists');
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+    <script>var scrf_token = $('{%csrf_token%}').val(); </script>
+    <h2>Sign up</h2>
+    <div class="col-3">
+        <div id='error_msg'></div>
         <form method="post">
             {% csrf_token %}
-            <input placeholder="email" type="email" name="email" maxlength="254" class="form-control" required=""
-                   id="id_email">
-            <input placeholder="login" type="text" name="username" maxlength="100" class="form-control"
-                   id="id_username">
-            <input placeholder="password" type="text" name="password" maxlength="128" class="form-control" required=""
-                   id="id_password">
-            <button type="submit" class="btn_login">sign up</button>
+            {{ form }}
+            <button type="submit" class="btn btn-primary mt-2">Sign Up</button>
         </form>
-        <div class="separator"><span>already have account? <a
-                href="{% url 'login' %}">sign in</a></span></div>
-        <div>
-        </div>
-        <script>
-            $('#id_email').change(function () {
-                var email = $(this).val();
-                $.ajax({
-                    type: 'POST',
-                    url: '{% url "is_user_exist" %}',
-                    data: {
-                        'csrfmiddlewaretoken': scrf_token,
-                        'mail': email,
-                    },
-                    dataType: 'json',
-                    cache: false,
-                    success: function (data) {
-                        if (data.result) {
-                            $('#error_msg').text('email already exists');
-                        }
+    </div>
+    <script>
+        $('#id_email').change(function () {
+            var email = $(this).val();
+            $.ajax({
+                type: 'POST',
+                url: '{% url "is_user_exist" %}',
+                data: {
+                    'csrfmiddlewaretoken': scrf_token,
+                    'mail': email,
+                },
+                dataType: 'json',
+                cache: false,
+                success: function (data) {
+                    if (data.result) {
+                        $('#error_msg').text('email занят');
                     }
-                });
+                }
             });
-        </script>
+        });
+    </script>
 {% endblock %}

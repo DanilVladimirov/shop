@@ -32,7 +32,7 @@ class MatrixSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ['id', 'title', 'brand', 'desc', 'vendor_code', 'price']
+        fields = ['id', 'title', 'brand', 'desc', 'vendor_code', 'price', 'rating']
 
 
 class BasketSerializer(serializers.ModelSerializer):
@@ -41,7 +41,7 @@ class BasketSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = BasketItem
-        fields = ['qty', 'price', 'user', 'product_info', 'product']
+        fields = ['qty', 'price', 'user', 'product_info', 'product',]
 
 
     def to_representation(self, obj):
@@ -63,3 +63,17 @@ class BasketSerializer(serializers.ModelSerializer):
             item.qty += validated_data.get('qty')
             item.save()
         return item
+
+
+class WishlistSerializer(serializers.ModelSerializer):
+    product_info = ProductSerializer(source='product', read_only=True)
+    class Meta:
+        model = Wishlist
+        fields = ['product_info',]
+
+
+class CategorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Categories
+        fields = ['id', 'name',]

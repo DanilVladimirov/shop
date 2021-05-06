@@ -13,6 +13,13 @@ from googleapiclient.errors import HttpError
 import datetime
 from django.forms.models import model_to_dict
 from django.shortcuts import get_object_or_404
+from dotenv import load_dotenv
+load_dotenv()
+import os
+
+from shop.storage_backends import MediaStorage
+from django.core.files.base import ContentFile
+
 
 
 
@@ -41,8 +48,9 @@ class Basket:
         del(product_info['cid'])
         del(product_info['photo'])
         del(product_info['file_digit'])
-        del(product_info['attrs'])
+        del(product_info['brand'])
         del(product_info['comments'])
+        del(product_info['attrs'])
         if not basket.get(str(product_id)):
             basket[str(product_id)] = product_info
         now_qty = basket[str(product_id)].get('qty', 0)
@@ -69,6 +77,7 @@ class Basket:
 class OrderServise:
     def filter_order(data):
         filter_order = {}
+        date_default = {}
         if data.get('min_amount'):
             filter_order['total_amount__gte'] = data.get('min_amount') 
         if data.get('max_amount'):
@@ -78,11 +87,13 @@ class OrderServise:
             date_start = data.get('date_start').split('-')
             date_start = list(map(int, date_start))
             filter_order['date_create__gte'] = datetime.date(*date_start)
+            filter_order['date_start'] = data.get('date_start')
         if data.get('date_end'):
             date_default['date_end'] = data.get('date_end')
             date_end = data.get('date_end').split('-')
             date_end = list(map(int, date_end))
             filter_order['date_create__lte'] = datetime.date(*date_end)
+            filter_order['date_end'] = data.get('date_end')
         if data.get('status'):
             filter_order['status'] = data.get('status')
         
@@ -106,7 +117,7 @@ class ProductServices:
 
     def export_to_file(type_file):
         if type_file == 'csv':
-            with open('testss.csv', 'w', newline='',encoding='utf-8') as f:
+            with open('export.csv', 'w', newline='',encoding='utf-8') as f:
                 export_file = csv.DictWriter(f, fieldnames = [
                     'Название',
                     'Остаток',
@@ -136,6 +147,12 @@ class ProductServices:
                         'Старая цена':item.old_price,
                         'Категория':';'.join(lst_categories),
                     })
+
+            csv_file = MediaStorage().save(name = 'export.csv', content = ContentFile(open('export.csv', 'rb').read()))
+            if csv_file:
+                return MediaStorage().url(csv_file)
+            else:
+                return None
         elif type_file == 'xlsx':
             workbook = xlsxwriter.Workbook('price.xlsx')
             worksheet = workbook.add_worksheet()
@@ -182,6 +199,11 @@ class ProductServices:
                 worksheet.write(row, col + 7, cat)
                 row += 1
             workbook.close()
+            xlsx_file = MediaStorage().save(name = 'price.xlsx', content = ContentFile(open('export.csv', 'rb').read()))
+            if xlsx_file:
+                return MediaStorage().url(xlsx_file)
+            else:
+                return None
 
 
     def data_preparation_edit_price(lst_data) -> dict :
@@ -347,3 +369,112 @@ class ImportSheet:
         html_result += '</tbody></table>'
 
         return html_result
+
+
+class DeliveryFunc:
+
+    def calc_cost_of_delivery(id_delivery, total_amount):
+        try:
+            delivery = Delivery.objects.get(pk=id_delivery)
+        except Delivery.DoesNotExist:
+            return {}
+
+        if delivery.type_delivery == 'normal':
+            cost = delivery.calculate_cost_of_delivery(total_amount)
+            return {'cost':cost}
+        elif delivery.type_delivery == 'np':
+            return DeliveryFunc.novaposhta()
+
+    
+    def novaposhta(type_find = False, present_val = False, total_amount = False, warehouses = None):
+        if not type_find:
+            all_regions = list(DeliveryCitiesNP.objects.all().values_list('region', flat=True).distinct())
+            return {'select':sorted(all_regions), 'type':'region_novaposhta'}
+        elif type_find == 'region':
+            all_cities = DeliveryCitiesNP.objects.values_list('city', flat=True).filter(region = present_val)
+            return {'select':sorted(all_cities), 'type':'city_novaposhta'}
+        elif type_find == 'city':
+            try:
+                city = DeliveryCitiesNP.objects.get(city=present_val)
+                all_warehouses =city.deliverywarehousesnp_set.values_list('description_ru', flat=True)
+                return {'select':all_warehouses, 'type':'warehouses_novaposhta', 'ref':city.city_ref}
+            except DeliveryWarehousesNP.DoesNotExist:
+                return {}
+        elif type_find == 'warehouses':
+            try:
+                city = DeliveryCitiesNP.objects.get(city_ref=present_val)
+                cost = city.calc_cost_of_delivery(total_amount)
+                print(warehouses)
+                war_val = city.deliverywarehousesnp_set.values('ref_warehouse').filter(description_ru = warehouses)
+                if war_val:
+                    is_warehouses = war_val[0]['ref_warehouse']
+                else:
+                    is_warehouses = False
+                return {'cost':cost, 'war_ref':is_warehouses}
+            except DeliveryCitiesNP.DoesNotExist:
+                return {}
+
+
+        
+
+def update_w():
+    link = 'https://api.novaposhta.ua/v2.0/json/'
+    data = (
+        '{"modelName": "AddressGeneral",'
+        '"calledMethod": "getWarehouses",'
+        '"methodProperties": {"Language": "ru"},'
+        f'"apiKey": "{os.environ.get("TOKEN_NP")}"}}'
+    )
+    headers = {'Content-Type':'application/json',}
+    req = requests.post(link, data=data, headers=headers)
+    responce = req.json()
+    cnt = 0
+    if responce.get('success'):
+        for item in responce['data']:
+            cnt+=1
+            print(cnt)
+            try:
+                city = DeliveryCitiesNP.objects.get(city_ref=item.get('CityRef'))
+            except:
+                print(item)
+                continue
+            item_ref =item.get('Ref')
+            data_warehouse = {
+                'city':city,
+                'sitekey':item.get('SiteKey'),
+                'description':item.get('Description'),
+                'description_ru':item.get('DescriptionRu'),
+                'short_address':item.get('ShortAddress'),
+                'short_address_ru':item.get('ShortAddressRu'),
+                'number_warehouse':item.get('Number'),
+            }
+            DeliveryWarehousesNP.objects.update_or_create(
+                ref_warehouse=item_ref,
+                defaults = data_warehouse
+            )
+
+
+def update_c():
+    link = 'https://api.novaposhta.ua/v2.0/json/'
+    headers = {'Content-Type':'application/json',}
+    data = (
+        '{"modelName": "Address",'
+        '"calledMethod": "getCities",'
+        f'"apiKey": "{os.environ.get("TOKEN_NP")}"}}'
+    )
+    req = requests.post(link, data=data, headers=headers)
+    responce = req.json()
+    cnt = 0
+    if responce.get('success'):
+        for item in responce['data']:
+            cnt+=1
+            print(cnt)
+            city_ua = item['Description']
+            data_city = {
+                'city':item['DescriptionRu'],
+                'city_ref':item['Ref'],
+                'cityID':item['CityID'],
+                'region_ua':item['AreaDescription'],
+                'region':item['AreaDescriptionRu'],
+            }
+            DeliveryCitiesNP.objects.update_or_create(city_ua=city_ua, defaults=data_city)

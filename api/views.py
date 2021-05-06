@@ -10,6 +10,7 @@ from rest_framework.authentication import SessionAuthentication
 
 from rest_framework.response import Response
 from django.http import Http404
+from django.db import utils
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -178,13 +179,149 @@ class Basket(APIView):
         return Response(context)
 
 
+class WishlistAPI(APIView):
+
+    def get_wishlist(self, user):
+        return Wishlist.objects.filter(user=user)
+
+    def get(self, request, format = None):
+        context = {}
+        data = request.GET
+        show_all = request.user.has_perm('product.show_all_wishlist')
+        if data.get('user_id') and show_all:
+            try: 
+                user = CustomUser.objects.get(id = data.get('user_id'))
+                wishlist = self.get_wishlist(user)
+            except CustomUser.DoesNotExist:
+                user = request.user
+                context = {'success':False, 'msg':'user not found'}
+                return Response(context)
+        else:
+            wishlist = self.get_wishlist(request.user)
+        serializer = serializers.WishlistSerializer(wishlist, many = True)
+        context['success'] = serializer.data
+        return Response(context)
+
+
+    def post(self, request, format = None):
+        context = {}
+        data_request = request.POST
+        id_product = data_request.get('id')
+        try:
+            product = Product.objects.get(pk = id_product)
+            product.add_to_wishlist(user = request.user)
+            context = {'success': True, 'msg': 'Товар добавлен в список желаний'}
+        except Product.DoesNotExist:
+            context = {'success':False, 'msg':'product not found'}
+        
+        return Response(context)
+
+    def delete(self, request, format = None):
+        context = {}
+        data_request =request.POST
+        data = {}
+        data['user'] = request.user
+        id_product = data_request.get('id') 
+        if id_product:
+            msg = 'Товар удален из списка желаний'
+            try:
+                product = Product.objects.get(pk = id_product)
+                data['product'] = product
+            except Product.DoesNotExist:
+                context = {'success': False, 'msg':'Товар не найден'}
+                return Response(context)
+        else:
+            msg = 'Список желаний очищен'
+        Wishlist.objects.filter(**data).delete()
+        context = {'success':True, 'msg':msg}
+        return Response(context)
+
+
+
+class CategoryAPI(APIView):
+
+    def get(self, request, format = None):
+        context = {}
+        categories = Categories.objects.all()
+        serializer = serializers.CategorySerializer(categories, many = True)
+        context = serializer.data
+        return Response(context)
+            
+
+    
+    def post(self, request, format = None):
+        context = {}
+        name = request.POST.get('name')
+        if not name:
+            context = {'success':False, 'msg':'Не задан обязательный параметр'}
+            return Response(context)
+        else:
+            new_cat, create_cat = Categories.objects.get_or_create(name = name)
+            if not create_cat:
+                context = {'success':False, 'msg':'Категория с таким названием уже есть'}
+            else:
+                context = {'success':True, 'info':{}}
+                context['info'] = {'id':new_cat.pk, 'name':new_cat.name}
+            return Response(context)
+
+    
+    def put(self, request, format = None):
+        context = {}
+        id_category = request.POST.get('id')
+        name_category = request.POST.get('name')
+        if not id_category or not name_category:
+            context = {'success':False, 'msg':'Не задан обязательный параметр'}
+        else:
+            try:
+                category = Categories.objects.get(pk=id_category)
+                category.name = name_category
+                category.save()
+                context = {'success':True, 'msg':'Изменения сохранены'}
+            except Categories.DoesNotExist:
+                context = {'success':False, 'msg':'ID введен неверно'}
+            except utils.IntegrityError:
+                context = {'success':False, 'msg':'Категория с таким названием уже есть'}
+
+        return Response(context)
+
+
+    def delete(self, request, format = None):
+        context = {}
+        id_category = request.POST.get('id')
+        if id_category:
+            try:
+                category = Categories.objects.get(pk = id_category).delete()
+                context = {'success':True, 'msg':'Категория удалена'}
+            except Categories.DoesNotExist:
+                context = {'success':False, 'msg':'Категория не найдена'}
+
+        return Response(context)
+
+
 
 class ProductAPI(APIView):
+
+    def get(self, request, format = None):
+        context = {}
+        id_product = request.GET.get('id')
+        if id_product:
+            try:
+                product = Product.objects.get(pk = id_product)
+                serializer = serializers.ProductSerializer(product)
+                context = serializer.data
+            except Product.DoesNotExist:
+                context = {'success':False, 'msg':'Product not found'}
+        else:
+            context = {'success':False, 'msg':'Не указан обязательный параметр'}
+        return Response(context)
+
+
+class ProductListAPI(APIView):
 
     def get(self, request, format=None):
         filter_attr = request.GET
         filter_product = services.ProductServices.filter_product(filter_attr)
         product = Product.objects.filter(**filter_product)
         serializer = serializers.ProductSerializer(product, many=True)
-        context = {'success': serializer.data}
+        context = {'success':serializer.data}
         return Response(context)
