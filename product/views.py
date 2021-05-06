@@ -131,6 +131,57 @@ def product_page(request, pid):
         request.session.modified = True
         compare_list = request.session.get('compare', {})
         print(compare_list)
+
+    viewed_products = request.session.get('viewed_products', {})
+    product = get_object_or_404(Product, pk=pid)
+    viewed_products.pop(str(product.id), None)
+    if len(viewed_products) >= 6: del viewed_products[next(iter(viewed_products))]
+    viewed_products_html = convert_html.viewed_products(viewed_products)
+    context['product'] = product
+    viewed_products[str(product.id)] = {'id': product.id, 'title': product.title, 'price': product.price,
+                                        'desc': product.desc}
+    request.session['viewed_products'] = viewed_products
+    context['viewed_products'] = viewed_products_html
+    if request.user.is_authenticated:
+        try:
+            context['is_wishlist'] = product.wishlist_set.get(user=request.user)
+        except Wishlist.DoesNotExist:
+            context['is_wishlist'] = False
+        try:
+            context['is_sub_edit_price'] = product.subeditprice_set.get(user=request.user)
+        except SubEditPrice.DoesNotExist:
+            context['is_sub_edit_price'] = False
+        try:
+            context['is_sub_active_product'] = product.subactivateproduct_set.get(user=request.user)
+        except SubActivateProduct.DoesNotExist:
+            context['is_sub_active_product'] = False
+    lst_ids_cats = list(product.cid.values_list('id', flat=True))
+    rec_f1 = Product.objects.exclude(pk=product.pk).filter(is_recommend=True, cid__in=lst_ids_cats).order_by('?')[:1]
+    rec_f2 = Product.objects.exclude(pk=product.pk).filter(
+        cid__in=lst_ids_cats,
+        price__gt=product.price * 0.7,
+        price__lt=product.price * 1.3).order_by('?')[:5]
+    recommend_products = rec_f1 | rec_f2
+    recommend_products = recommend_products[:5]
+    context['rating_product'] = product.rating
+    if request.user.is_authenticated:
+        select_rating = product.select_rating(user=request.user)
+        context['select_rating'] = convert_html.select_rating_product(product.id, select_rating)
+    context['recommend_pr'] = convert_html.recommend_products(recommend_products)
+
+    ### кусок гкода для блока "с этим товаром так же покупают". я понимаю, что это гкод и мне стыдно за него
+    ### но оно работает))))
+    all_item = OrderItem.objects.filter(product=product)
+    lst_all_order = []
+    for i in all_item:
+        lst_all_order.append(i.order)
+
+    all_orderitem_with_product = OrderItem.objects.filter(order__in=lst_all_order).exclude(product=product)
+    buy_together = all_orderitem_with_product.values(
+        'product', 'product__title'
+    ).annotate(all_qty=Sum('qty')).order_by('-all_qty')[:5]
+    context['buy_together'] = convert_html.buy_together(buy_together)
+
     return render(request, 'product-page.html', context)
 
 
@@ -321,11 +372,13 @@ def product_page_v2(request, pk):
 
     return render(request, 'product/product_page.html', context)
 
+
 def select_curr(request):
     if request.method == 'POST':
         link = request.META.get('HTTP_REFERER')
         request.session['curr_id'] = request.POST.get('all_currency')
         return HttpResponseRedirect(link)
+
 
 def basket(request):
     if request.method == 'POST':
@@ -728,17 +781,17 @@ def rating_product(request):
                 try:
                     pr_delete = product.rating_product.get(user=request.user)
                     pr_delete.delete()
-                    data_response['success'] = 'Оценка снята.'
+                    data_response['success'] = 'Assessment removed.'
                     pr_delete.recalc_rating()
                 except RatingProduct.DoesNotExist:
-                    data_response['error'] = 'Вы еще не голосовали.'
+                    data_response['error'] = 'You have not voted yet.'
             else:
                 product.rating_product.update_or_create(user=request.user, 
-                    defaults={'value_rating':data.get('mark')})
-                data_response['success'] = 'Спасибо за оценку.'
+                    defaults={'value_rating': data.get('mark')})
+                data_response['success'] = 'Thanks'
             data_response['new_avg'] = Product.objects.get(pk=data.get('id')).rating
         except Product.DoesNotExist:
-            data_response['error'] = 'Некорректные параметры'
+            data_response['error'] = 'invalid parameters'
     return HttpResponse(json.dumps(data_response), content_type='application/json')
 
 

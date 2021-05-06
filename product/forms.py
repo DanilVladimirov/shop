@@ -14,6 +14,7 @@ class ChangeStatusOrder(forms.ModelForm):
         model = Order
         fields = ['status',]
 
+
 class CreatePromo(forms.ModelForm):
     class Meta:
         model = Promocode
