@@ -11,8 +11,9 @@ from accounts.forms import *
 from django.contrib.auth.decorators import login_required
 
 
+
 class SignUpView(generic.CreateView):
-    model = User
+    model = CustomUser()
     template_name = 'accounts/signup.html'
     form_class = RegisterUserForm
     success_url = reverse_lazy('main_page')
@@ -22,6 +23,7 @@ class SignUpView(generic.CreateView):
         email = form.cleaned_data['email']
         password = form.cleaned_data['password']
         aut_user = authenticate(email=email, password=password)     
+        aut_user.groups.add(Group.objects.get(name='User'))
         login(self.request, aut_user)
         return form_valid
     
@@ -45,7 +47,6 @@ class LoginView(LoginView):
         subscribe.subscribe_authorization(uid, ssid, ip)
         return HttpResponseRedirect(self.get_success_url())
 
-
 class UserLogoutView(LogoutView):
     next_page = reverse_lazy('main_page')
 
@@ -58,3 +59,28 @@ def is_user_exist(request):
         return HttpResponse(json.dumps(data_response), content_type = 'application/json')
 
 
+def mailing_promotions(request):
+    template = 'accounts/promotions.html'
+    if request.method == 'POST':
+        data = request.POST
+        msg_promotions = data.get('text_promotions')
+        subscribe.subscribe_promo(msg_promotions)
+        return HttpResponseRedirect(request.path_info)
+    return render(request, template)
+
+
+@login_required(login_url='main_page')
+def subscribes(request):
+    template = 'accounts/subscribe.html'
+    context = {}
+    subs, _ = Subscribe.objects.get_or_create(user = request.user)
+    form = SubscribeForm(instance=subs)
+    context['form'] = form
+    if request.method == 'POST':
+        form = SubscribeForm(request.POST, instance=subs)
+        if form.is_valid():
+            form = form.save(commit=False)
+            form.user = request.user
+            form.save()
+            return HttpResponseRedirect(request.path_info)
+    return render(request, template, context)

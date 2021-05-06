@@ -11,6 +11,7 @@ from accounts.subscribe import subscribe_edit_price
 from django.contrib import admin
 
 
+
 class PriceMatrix(models.Model):
     name = models.CharField(max_length=200, default='Name matrix', verbose_name='Название')
 
@@ -18,13 +19,14 @@ class PriceMatrix(models.Model):
 class PriceMatrixItem(models.Model):
     type_item_choices = [
         ('relative', 'В процентах'),
-        ('fixed', 'Фиксированная'),
+        ('fixed', 'Фиксированная'),    
     ]
-    min_value = models.FloatField(default=0, verbose_name='От')
+    min_value = models.FloatField(default=0, verbose_name='От') 
     max_value = models.FloatField(default=0, verbose_name='До')
     type_item = models.CharField(max_length=50, choices=type_item_choices, default='fixed', verbose_name='Тип')
     value = models.FloatField(default=0, verbose_name='Значение')
     matrix = models.ForeignKey(PriceMatrix, on_delete=models.CASCADE)
+
 
 
 class Attributes(models.Model):
@@ -72,33 +74,85 @@ class Product(models.Model):
     photo = models.FileField(default=None, null=True, blank=True)
     attrs = models.ManyToManyField(ProductAttrs)
     comments = models.ManyToManyField(CommentsProduct, blank=True)
-
-    __origin_price = None
+    is_recommend = models.BooleanField(default=False, verbose_name='Рекомендовать')
+    rating = models.FloatField(null=True, verbose_name='Рейтинг', blank=True)
+    is_active = models.BooleanField(default=True, verbose_name='Активный')
+    
 
     def __str__(self):
         return self.title
 
+    __origin_price = None
+    __origin_stock = None
+    __origin_is_active = None
+    __origin_file_digit = None
+
     def __init__(self, *args, **kwargs):
         super(Product, self).__init__(*args, **kwargs)
         self.__origin_price = self.price
+        self.__origin_stock = self.stock
+        self.__origin_is_active = self.is_active
+        self.__origin_file_digit = self.file_digit
 
     def save(self, *args, **kwargs):
         self.price = round(self.price, 2)
         self.old_price = round(self.old_price, 2)
-        if self.__origin_price != self.price:
-            self.get_list_tg_sub_edit_price()
+        if self.__origin_price != self.price and self.is_active and self.__origin_is_active:
+            self.get_list_tg_sub(type_sub='edit_price')
+        if self.__origin_stock == 0 and self.stock > 0 and self.is_active:
+            self.get_list_tg_sub(type_sub='active_product')
+        if self.__origin_file_digit != self.file_digit:
+            print(self.filetelegram_set.all())
+            print(self.filetelegram_set.all().delete())
         super(Product, self).save(*args, **kwargs)
+    
 
-    def get_list_tg_sub_edit_price(self):
+    def get_absolute_url(self):
+        return reverse('product_page', args=[self.id])
+
+
+    def get_list_tg_sub(self, type_sub):
         lst = []
-        all_user = self.subeditprice_set.all()
+        items = []
+        if type_sub == 'edit_price':
+            all_user = self.subeditprice_set.all()
+        elif type_sub == 'active_product':
+            all_user = self.subactivateproduct_set.all()
+        else:
+            return
         for user_sub in all_user:
             lst.append(user_sub.user.id_tg)
-        subscribe_edit_price(lst, self.title, self.price)
+            items.append(user_sub.pk)
+        
+        if type_sub == 'edit_price':
+            subscribe_edit_price(lst, self.title, self.price)
+        elif type_sub == 'active_product':
+            subscribe_active_product(lst, self.title, self.price, items)
+            
+        
+    def product_rating(self):
+        rating = self.rating_product.values('value_rating').aggregate(rating=models.Avg('value_rating'))
+        return rating.get('rating')
 
-    def delete(self):
-        self.photo.delete()
-        super(Product, self).delete()
+    
+    def select_rating(self, user):
+        try:
+            return self.rating_product.get(user=user).value_rating
+        except RatingProduct.DoesNotExist:
+            return None
+
+    
+    def is_wishlist(self, user):
+        return self.wishlist_set.filter(user = user).exists()
+    
+
+    def add_to_wishlist(self, user):
+        return self.wishlist_set.create(user = user)
+
+    
+    def del_to_wishlist(self, user):
+        return self.wishlist_set.filter(user = user).delete()
+    
 
 
 # key words for search
@@ -129,14 +183,6 @@ class Brand(models.Model):
         return f'brand: {self.name}'
 
 
-class Currency(models.Model):
-    name = models.CharField(max_length=50, unique=True)
-    code = models.CharField(max_length=15, blank=True)
-    rate = models.FloatField(default=1)
-    disp = models.CharField(max_length=20, blank=True, null=True, default='y.e.')
-
-    def __str__(self):
-        return self.name
 
 
 class Promotions(models.Model):
@@ -158,14 +204,35 @@ class PromotionsTasks(models.Model):
     task_start_id = models.TextField(default="")
 
 
+class Currency(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    code = models.CharField(max_length=15, blank=True)
+    rate = models.FloatField(default=1)
+    disp = models.CharField(max_length=20, blank=True, null=True, default='y.e.')
+
+    def __str__(self):
+        return self.name
+
+
+
 class Delivery(models.Model):
+
+    type_choices = [
+        ('normal', 'Обычный'),
+        ('np', 'NovaPoshta'),
+    ]
+
     name = models.CharField(max_length=350, default='Delivery')
+    type_delivery = models.CharField(default='normal', choices=type_choices, max_length=50, verbose_name='Тип (для сторонних интеграций)')
     description = models.TextField(blank=True, null=True)
     matrix = models.ForeignKey(PriceMatrix, blank=True, null=True, default=None, on_delete=models.PROTECT)
 
     def __str__(self):
         return self.name
 
+
+
+    ##### похоже от этого избавился, перепроверить и удалить.
     @classmethod
     def calc_cost_of_delivery(cls, id_delivery, total_amount):
         delivery = cls.objects.get(pk=id_delivery)
@@ -176,19 +243,36 @@ class Delivery(models.Model):
         cost_of_delivery = 0
         for item in items:
             if item.min_value <= total_amount < item.max_value:
-                if item.type_item == 'fixed':
+                if item.type_item =='fixed':
                     cost_of_delivery = item.value
                     break
                 elif item.type_item == 'relative':
-                    cost_of_delivery = total_amount / 100 * item.value
+                    cost_of_delivery = total_amount /100 * item.value
                     break
 
         cost_of_delivery = round(cost_of_delivery, 2)
         return cost_of_delivery
 
+    def calculate_cost_of_delivery(self, total_amount):
+        delivery_matrix = self.matrix
+        if not delivery_matrix:
+            return 0
+        items = delivery_matrix.pricematrixitem_set.all()
+        cost_of_delivery = 0
+        for item in items:
+            if item.min_value <= total_amount < item.max_value:
+                if item.type_item =='fixed':
+                    cost_of_delivery = item.value
+                    break
+                elif item.type_item == 'relative':
+                    cost_of_delivery = total_amount /100 * item.value
+                    break
+
+        cost_of_delivery = round(cost_of_delivery, 2)
+        return cost_of_delivery
 
 class Promocode(models.Model):
-    # table with promocode
+    #table with promocode
     type_discount_choices = [
         ('fixed', 'Фиксированная'),
         ('relative', 'Относительная'),
@@ -202,15 +286,15 @@ class Promocode(models.Model):
     amount_of_discount = models.FloatField(default=0)
     type_promo = models.CharField(default='reusable', choices=type_promo_choices, max_length=50)
     status = models.BooleanField(default=True)
-    start_promo = models.DateField(blank=True, null=True)
-    end_promo = models.DateField(blank=True, null=True)
+    start_promo = models.DateField(blank=True, null = True)
+    end_promo = models.DateField(blank=True, null = True)
 
     def __str__(self):
         return self.code
 
     @classmethod
     def is_promo(cls, promocode):
-        is_promo = cls.objects.filter(code=promocode, status=True)[0]
+        is_promo = cls.objects.filter(code = promocode, status = True)[0]
         if is_promo:
             if is_promo.start_promo:
                 if is_promo.end_promo:
@@ -226,27 +310,28 @@ class Promocode(models.Model):
                 return True
             return False
         return False
-
+    
+    #### похоже тоже ненужное. проверить еще раз и удалить
     @classmethod
     def get_discount(cls, total_sum, promocode):
         promo = cls.objects.get(code=promocode)
         if promo.type_code == 'fixed':
-            discount = promo.amount_of_discount
+                discount = promo.amount_of_discount
         elif promo.type_code == 'relative':
             discount = total_sum * promo.amount_of_discount / 100
         return discount
-
+    
     def get_sum_discount(self, total_amount=None):
         discount = 0
         if self.type_code == 'fixed':
-            discount = self.amount_of_discount
+                discount = self.amount_of_discount
         elif self.type_code == 'relative':
             discount = total_amount * self.amount_of_discount / 100
         return discount
 
+    
     @classmethod
-    def generate_new_promocode(cls, type_code='relative', type_promo='onceuse', value='-10', start=None, end=None,
-                               str_len=15, cnt=1):
+    def generate_new_promocode(cls, type_code = 'relative', type_promo = 'onceuse', value = '-10', start = None, end = None, str_len = 15, cnt = 1):
         promo = []
         for _ in range(cnt):
             while True:
@@ -262,10 +347,11 @@ class Promocode(models.Model):
                 except utils.IntegrityError:
                     continue
         return promo
+        
 
 
 class Order(models.Model):
-    # user =
+    #user = 
     status_choices = [
         ('new', 'Новый'),
         ('processing', 'В обработке'),
@@ -281,16 +367,24 @@ class Order(models.Model):
     currency = models.ForeignKey(Currency, on_delete=models.PROTECT, verbose_name='Валюта')
     rate_currency = models.FloatField(default=1, verbose_name='Курс валюты в момент заказа')
     promo = models.ForeignKey(Promocode, on_delete=models.PROTECT, blank=True, null=True, verbose_name='Промокод')
-    delivery_method = models.ForeignKey(Delivery, null=True, blank=True, on_delete=models.PROTECT,
-                                        verbose_name='Способ доставки')
+    delivery_method = models.ForeignKey(Delivery, null=True, blank=True, on_delete=models.PROTECT, verbose_name='Способ доставки')
     cost_of_delivery = models.FloatField(default=0, verbose_name='Стоимость доставки')
     is_paid = models.BooleanField(default=False, verbose_name='Было ли списание средств.')
+    delivery_department = models.CharField(null=True, blank=True, verbose_name='Информация об адресе доставки.', max_length=400)
+    courier = models.ForeignKey(CustomUser, on_delete = models.PROTECT, blank = True, null = True, verbose_name='Курьер', related_name = 'courier')
+    phone_number = models.CharField(default='', null = True, blank = True, verbose_name = 'Номер телефона', max_length = 20)
+    full_name = models.CharField(default='', null = True, blank = True, max_length=150, verbose_name= 'Адрес доставки')
+    notes = models.CharField(default = '', null = True, blank = True, max_length = 300, verbose_name = 'Комментарий к заказу')
+
+
 
     class Meta:
-        permissions = (('change_status', 'Can change status order'),)
+        permissions = (('change_status','Can change status order'),)
+
 
     def get_absolute_url(self):
         return reverse('invoice_page', args=[self.id])
+
 
     def save(self, *args, **kwargs):
         self.full_amount = round(self.full_amount, 2)
@@ -298,6 +392,7 @@ class Order(models.Model):
         self.cost_of_delivery = round(self.cost_of_delivery, 2)
         self.rate_currency = round(self.rate_currency, 2)
         super(Order, self).save(*args, **kwargs)
+    
 
     def payment(self):
         if self.user.balance >= self.total_amount:
@@ -306,6 +401,7 @@ class Order(models.Model):
             self.user.balance = self.user.balance - self.total_amount
             self.user.save()
             self.save()
+            subscribe_get_file_in_order(self.pk)
             return True
         return False
 
@@ -318,9 +414,10 @@ class Order(models.Model):
         self.save()
         return True
 
+    #убрать классметод и во вьюшке переписать
     @classmethod
     def change_status(cls, id_order, new_status):
-        obj = cls.objects.get(pk=id_order)
+        obj = cls.objects.get(pk = id_order)
         obj.status = new_status
         obj.save()
 
@@ -328,11 +425,20 @@ class Order(models.Model):
         order_item = self.orderitem_set.all()
         self.full_amount = order_item.get_total_amount()
         promo = self.promo.get_sum_discount(self.full_amount) if self.promo else 0
-        self.cost_of_delivery = Delivery.calc_cost_of_delivery(self.delivery_method.id, self.full_amount + promo)
+        print(self.delivery_method)
+        if self.delivery_method.type_delivery == 'normal':
+            cost_of_delivery = self.delivery_method.calculate_cost_of_delivery(self.full_amount + promo)
+            #Delivery.calc_cost_of_delivery(self.delivery_method.id, self.full_amount + promo)
+        elif self.delivery_method.type_delivery == 'np':
+            try:
+                war_np = DeliveryWarehousesNP.objects.get(ref_warehouse=self.delivery_department)
+                city_info = war_np.city
+                ref_city = city_info.city_ref
+                cost_of_delivery = city_info.calc_cost_of_delivery(self.full_amount + promo)
+            except DeliveryWarehousesNP.DoesNotExist:
+                cost_of_delivery = 0
+        self.cost_of_delivery = cost_of_delivery 
         self.total_amount = self.full_amount + promo + self.cost_of_delivery
-        self.cost_of_delivery_on_curr = self.cost_of_delivery * self.rate_currency
-        self.total_amount_on_curr = self.total_amount * self.rate_currency
-        self.full_amount_on_curr = self.full_amount * self.rate_currency
         self.save()
 
 
@@ -344,48 +450,56 @@ class OrdetItemQuerySet(models.QuerySet):
             total += i.qty * i.cost
         return total
 
-
 class OrderItemManager(models.Manager):
     _queryset_class = OrdetItemQuerySet
 
 
 class OrderItem(models.Model):
-    # содержимое заказов
+    #содержимое заказов
     product = models.ForeignKey(Product, on_delete=models.PROTECT)
     id_good = models.IntegerField(default=1)
     title_good = models.CharField(default='Noname', max_length=300)
     cost = models.FloatField(default=1)
     qty = models.IntegerField(default=1)
     order = models.ForeignKey('Order', on_delete=models.CASCADE)
+
+
     objects = OrderItemManager()
+    
+    def product_title(self):
+        return product.title
 
     @classmethod
     def add_item(cls, data):
         if data.get('pk'):
             try:
-                obj = cls.objects.get(pk=data.get('pk'))
-                price = data.get('price') / obj.order.rate_currency if data.get('price') else obj.cost
+                obj = cls.objects.get(pk = data.get('pk'))
+                price = data.get('price')/obj.order.rate_currency if data.get('price') else obj.cost 
                 obj.cost = price
                 obj.qty = data.get('qty', obj.qty)
                 obj.save()
             except cls.DoesNotExist:
                 return False
         else:
-            item, create = cls.objects.update_or_create(
-                order=data.get('order'),
-                product=data.get('product'),
-                defaults={
-                    'title_good': data.get('title', data['product'].title),
-                    'qty': data.get('qty', 1),
-                    'cost': data.get('price', data['product'].price)
-                }
-            )
-            if not create:
+            try:
+                item = cls.objects.get(order=data.get('order'), product=data.get('product'))
                 item.qty += 1
                 item.save()
+            except cls.DoesNotExist:
+                cls.objects.create(
+                    order=data.get('order'),
+                    product=data.get('product'),
+                    title_good=data.get('title', data['product'].title),
+                    qty=data.get('qty', 1),
+                    cost=data.get('price', data['product'].price)
+                )
+        
+
+
 
 
 class FileTelegram(models.Model):
+
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     id_file = models.CharField(max_length=100)
 
@@ -398,12 +512,12 @@ class BasketQuerySet(models.QuerySet):
             total += i.qty * i.price
         return total
 
-
 class BasketManager(models.Manager):
     _queryset_class = BasketQuerySet
 
 
 class BasketItem(models.Model):
+
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name='Пользователь')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='Товар', null=True)
     qty = models.IntegerField(default=1, verbose_name='Количество')
@@ -413,16 +527,107 @@ class BasketItem(models.Model):
     objects = BasketManager()
 
     class Meta:
+        
         permissions = (
             ('show_all_baskets', 'Просматривать корзины других пользователей'),
-        )
+        )        
 
 
 class Wishlist(models.Model):
+
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete = models.CASCADE)
+
+
+    class Meta:
+        permissions = (
+            ('show_all_wishlist', 'Просматривать список желаний других пользователей'),
+        )  
+
+    def save(self, *args, **kwargs):
+        if Wishlist.objects.filter(user=self.user, product=self.product).exists():
+            return
+        else:
+            super(Wishlist, self).save(*args, **kwargs)
+
+
 
 
 class SubEditPrice(models.Model):
+
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
+
+class SubActivateProduct(models.Model):
+
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+
+
+class RatingProduct(models.Model):
+
+    user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, related_name='rating_user')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='rating_product')
+    value_rating = models.IntegerField()
+
+
+    def save(self, *args, **kwargs):
+        super(RatingProduct, self).save(*args, **kwargs)
+        self.recalc_rating()
+    
+    
+    def recalc_rating(self):
+        pr_rating = RatingProduct.objects.filter(product = self.product).aggregate(avg=models.Avg('value_rating'))
+        self.product.rating = pr_rating.get('avg')
+        self.product.save()
+
+
+class DeliveryCitiesNP(models.Model):
+
+    city = models.CharField(max_length=150, blank=True, null=True)
+    city_ua = models.CharField(max_length=150, blank=True, null=True)
+    region = models.CharField(max_length=200, blank=True, null=True)
+    region_ua = models.CharField(max_length=200, blank=True, null=True)
+    city_ref = models.CharField(max_length=50, blank=True, null=True)
+    cityID = models.IntegerField(default=0)
+
+    def calc_cost_of_delivery(self, total_amount):
+        link = 'https://api.novaposhta.ua/v2.0/json/'
+        headers = {'Content-Type':'application/json',}
+        
+        data = (
+            '{"modelName": "InternetDocument",'
+            '"calledMethod": "getDocumentPrice",'
+            '"methodProperties": {'
+            '"CitySender": "ae14ae5b-b77a-11e9-8c22-005056b24375",'
+            f'"CityRecipient": "{self.city_ref}",'
+            '"Weight": "10",'
+            '"ServiceType": "WarehouseWarehouse",'
+            f'"Cost": "{total_amount}",'
+            '"CargoType": "Cargo",'
+            '"SeatsAmount": "1",'
+            '"OptionsSeat": [{"weight": 10,'
+            '"volumetricWidth": 30,'
+            '"volumetricLength": 30,'
+            '"volumetricHeight": 30}]},'
+            f'"apiKey": "{os.environ.get("TOKEN_NP")}"}}'
+        )
+        
+        req = requests.post(link, data=data, headers=headers)
+        responce = req.json()
+        if responce['success']:
+            return responce['data'][0]['Cost']
+        else:
+            return False
+
+
+class DeliveryWarehousesNP(models.Model):
+    city = models.ForeignKey(DeliveryCitiesNP, on_delete=models.CASCADE)
+    sitekey = models.IntegerField(default=0)
+    description = models.CharField(max_length=250, blank=True, default='')
+    description_ru = models.CharField(max_length=250, blank=True, default='')
+    short_address = models.CharField(max_length=250, blank=True, default='')
+    short_address_ru = models.CharField(max_length=250, blank=True, default='')
+    ref_warehouse = models.CharField(max_length=250, blank=True, default='')
+    number_warehouse = models.IntegerField(default=0)
+    
