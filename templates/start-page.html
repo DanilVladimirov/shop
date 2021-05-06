@@ -3,7 +3,7 @@
     <link rel="stylesheet" href="/static/css/start-page.css">
 {% endblock %}
 {% block body %}
-    <div style="float: left;background-color: gainsboro;padding: 10px;border-radius: 10px;margin: 10px;font-size: 20px;">
+    <div style="float: left;background-color: #e9e9e9;padding: 10px;border-radius: 10px;margin: 10px;font-size: 20px;">
         <span>Categories:</span><br>
         {% for category in categories %}
             <span><a href="{% url 'search_products_page' %}?q={{ category.name }}">{{ category.name }}</a></span><br>

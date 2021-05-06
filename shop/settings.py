@@ -73,7 +73,7 @@ TEMPLATES = [
     },
 ]
 
-LOGIN_REDIRECT_URL = '/shop/'
+LOGIN_REDIRECT_URL = '/'
 
 WSGI_APPLICATION = 'shop.wsgi.application'
 
