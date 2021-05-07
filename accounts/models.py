@@ -7,10 +7,10 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.authtoken.models import Token
 
 
-courier_model = Group.objects.get_or_create(name='Courier')
-user_model = Group.objects.get_or_create(name='User')
-moder_model = Group.objects.get_or_create(name='Moder')
-seller_model = Group.objects.get_or_create(name='Seller')
+# courier_model = Group.objects.get_or_create(name='Courier')
+# user_model = Group.objects.get_or_create(name='User')
+# moder_model = Group.objects.get_or_create(name='Moder')
+# seller_model = Group.objects.get_or_create(name='Seller')
 
 
 class CustomUser(AbstractUser):
