@@ -1,12 +1,15 @@
 .user_brand {
     color: gray;
 }
+
 .text_category {
     font-size: 30px;
 }
+
 .form_select_category {
     text-align: center;
 }
+
 .select_category {
     font-size: 30px;
     border-radius: 10px;
@@ -14,28 +17,34 @@
     border-width: 2px;
     transition: 0.3s;
 }
+
 .select_category:hover {
     border-radius: 15px;
     transition: 0.3s;
 }
+
 .form_create_product {
     width: 400px;
     margin: auto;
     transition: 1s ease-out
 }
+
 .attributes {
     display: inline-grid;
 }
+
 .form_create_product input {
     width: 400px;
     height: 50px;
     font-size: 20px;
     margin-top: 10px;
 }
+
 .form_create_product select {
     height: 50px;
     font-size: 20px;
 }
+
 .form_create_product button {
     margin-top: 10px;
     height: 50px;
@@ -46,64 +55,77 @@
     background-color: white;
     transition: 0.3s;
 }
+
 .form_create_product button:hover {
     border-radius: 15px;
     background-color: #2196F3;
     color: white;
     transition: 0.3s;
 }
+
 .button_container {
     text-align: center;
 }
+
 .content {
     display: flex;
 }
+
 .all_products {
     margin-left: 10px;
     margin-right: 10px;
 }
+
 .create_product {
-    display:flex;
+    display: flex;
     background-color: lightgray;
     width: 400px;
     border-radius: 10px;
     padding: 5px;
     margin-top: 10px;
 }
+
 .button_create {
-    margin:auto;
+    margin: auto;
     background: none;
     border: none;
     width: 100%;
 }
+
 .button_create img {
     width: 60px;
 }
+
 .product_card {
-    display:flex;
-    background-color: lightgray;
+    display: flex;
     width: 400px;
+    border: solid;
     border-radius: 10px;
     padding: 5px;
     margin-top: 10px;
 }
+
 .product_image {
     width: 100px;
     height: 140px;
     object-fit: cover;
     border-radius: 10px;
 }
+
 .product_title {
     margin-left: 3px;
 }
+
 .product_forms {
     margin-top: 100px;
     margin-left: 3px;
     display: flex;
 }
+
 .form_delete {
-    margin-left: 175px;
+    margin-left: 170px;
 }
+
 .form_delete button {
     background-color: #2196F3;
     color: white;
@@ -111,19 +133,22 @@
     border-radius: 10px;
     font-size: 20px;
 }
+
 .form_edit button {
-    background-color:#f05146;
+    background-color: #f05146;
     color: white;
     border: none;
     border-radius: 10px;
     font-size: 20px;
 }
+
 .side_edit {
     background-color: #e9e9e9;
     margin-top: 10px;
     padding: 10px;
     border-radius: 10px;
 }
+
 .side_create {
     background-color: #e9e9e9;
     margin-top: 10px;

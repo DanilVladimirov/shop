@@ -30,4 +30,7 @@ urlpatterns = [
     path('shop/parser_rozetka/', parser_rozetka_view, name='parser_rozetka'),
     path('shop/update_cities_np/', update_cities_np, name = 'update_cities_np'),
     path('shop/update_warehouses_np/', update_warehouses_np, name = 'update_warehouses_np'),
+    path('add_comment/', add_comment, name='add_comment'),
+    path('add_presentation_image/', add_presentation_image, name='add_presentation_image'),
+    path('del_presentation_image/', del_presentation_image, name='del_presentation_image')
 ]

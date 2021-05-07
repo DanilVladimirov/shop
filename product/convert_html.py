@@ -8,7 +8,7 @@ def viewed_products(data):
             f'<h5 class="card-title">{i["title"]}</h5>'
             f'<img width="100px" src="{i.get("img_url")}">'
             f'<p class="card-text">{i.get("desc")}</p>'
-            f'<a href="/shop/product/{i.get("id")}" class="btn btn-primary">open page</a></div></div>'
+            f'<a href="/product/{i.get("id")}" class="btn btn-primary">open page</a></div></div>'
             
         )
     return responce_html
@@ -69,7 +69,7 @@ def recommend_products(data):
             f'<div class="card-body">'
             f'<h5 class="card-title">{i.title}</h5>'
             f'<p class="card-text">{i.desc}</p>'
-            f'<a href="/shop/product/{i.id}" class="btn btn-primary">open page</a></div></div>'
+            f'<a href="/product/{i.id}" class="btn btn-primary">open page</a></div></div>'
         )
     return responce_html
 
@@ -82,7 +82,7 @@ def buy_together(data):
             f'<div class="card-body">'
             f'<h5 class="card-title">{i["product__title"]}</h5>'
             f'<p class="card-text">Купили вместе {i["all_qty"]} раз</p>'
-            f'<a href="/shop/product/{i["product"]}" class="btn btn-primary">open page</a></div></div>'
+            f'<a href="/product/{i["product"]}" class="btn btn-primary">open page</a></div></div>'
         )
     return responce_html
 

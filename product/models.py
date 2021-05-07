@@ -55,6 +55,10 @@ class CommentsProduct(models.Model):
         return f'text:{self.text}'
 
 
+class PresentationImages(models.Model):
+    image = models.ImageField(upload_to='presentations', default=None, null=True, blank=True)
+
+
 class Product(models.Model):
     author = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
     type_product = models.CharField(choices=[('material', 'Материальный'), ('file', 'Файл'), ],
@@ -76,6 +80,7 @@ class Product(models.Model):
     is_recommend = models.BooleanField(default=False, verbose_name='Рекомендовать')
     rating = models.FloatField(null=True, verbose_name='Рейтинг', blank=True)
     is_active = models.BooleanField(default=True, verbose_name='Активный')
+    presentation_images = models.ManyToManyField(PresentationImages, blank=True)
 
     def __str__(self):
         return self.title
@@ -440,7 +445,7 @@ class OrderItemManager(models.Manager):
 
 class OrderItem(models.Model):
     # содержимое заказов
-    product = models.ForeignKey(Product, on_delete=models.PROTECT)
+    product = models.ForeignKey(Product, on_delete=models.PROTECT, default=None)
     id_good = models.IntegerField(default=1)
     title_good = models.CharField(default='Noname', max_length=300)
     cost = models.FloatField(default=1)

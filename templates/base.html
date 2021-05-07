@@ -21,6 +21,7 @@
             <span>sign in</span>
         {% endif %}
     </a>
+    <a class="active right_side" href="{% url 'checkout_page' %}"><img src="/static/cart.png"></a>
     <div class="search-container">
         <form action="{% url "search_products_page" %}">
             <input id="id_search_query" type="text" placeholder="Search.." name="q">
@@ -30,12 +31,6 @@
     </div>
     <button class="button_compare" onclick="location.href='#compare'">compare</button>
 
-    <button class="button_compare" onclick="location.href='{% url 'coco' %}'">auth with contact</button>
-
-    {% load shop_tags %}
-    {% if request.user|has_group:"Seller" %}
-        <button class="button_compare" onclick="location.href='{% url 'seller_products' %}'">my products</button>
-    {% endif %}
 </div>
 {% block body %}
 

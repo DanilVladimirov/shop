@@ -1,4 +1,6 @@
 from django.shortcuts import render, HttpResponseRedirect, get_object_or_404, redirect, HttpResponse
+
+from product.forms import ProductImage, PresentationImageForm
 from product.models import *
 from django.urls import reverse
 from django.forms.models import model_to_dict
@@ -11,12 +13,13 @@ from accounts import subscribe
 import datetime
 from dotenv import load_dotenv
 from product import convert_html
+
 load_dotenv()
 import os
 from django.db.models import Sum
 from product import parser_rozetka
 import re
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger  
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.models import Group
 
 
@@ -77,10 +80,13 @@ def search_products(request):
         category = brand.categories.get(name__icontains=search_category)
         products = brand.product_set.filter(cid=category)
         brands = category.brand_set.all()
-    context = {'category': category,
-               'products': products,
-               'brands': brands,
-               'brands_checked': brands_checked}
+    if not category and not products and not brands:
+        context = {'bad_search': True}
+    else:
+        context = {'category': category,
+                   'products': products,
+                   'brands': brands,
+                   'brands_checked': brands_checked}
     if request.POST:
         brands_checked = []
         dict_request = dict(request.POST)
@@ -112,12 +118,6 @@ def product_page(request, pid):
     product = Product.objects.get(id=pid)
     context = {'product': product}
     action = request.POST.get('action')
-    if request.POST and action == 'addcom':
-        comment = request.POST.get('comment')
-        new_comment = CommentsProduct.objects.create(user=request.user,
-                                                     text=comment)
-        new_comment.save()
-        product.comments.add(new_comment)
     if request.POST and action == 'add_to_compare':
         compare_list = request.session.get('compare', {})
         request.session['compare'] = compare_list
@@ -138,9 +138,9 @@ def product_page(request, pid):
     if len(viewed_products) >= 6: del viewed_products[next(iter(viewed_products))]
     viewed_products_html = convert_html.viewed_products(viewed_products)
     context['product'] = product
-    photo_url = product.photo.url if product.photo else '/static/img.jpeg' 
+    photo_url = product.photo.url if product.photo else '/static/img.jpeg'
     viewed_products[str(product.id)] = {'id': product.id, 'title': product.title, 'price': product.price,
-                                        'desc': product.desc, 'img_url':photo_url}
+                                        'desc': product.desc, 'img_url': photo_url}
     request.session['viewed_products'] = viewed_products
     context['viewed_products'] = viewed_products_html
     if request.user.is_authenticated:
@@ -184,6 +184,32 @@ def product_page(request, pid):
     context['buy_together'] = convert_html.buy_together(buy_together)
 
     return render(request, 'product-page.html', context)
+
+
+def add_presentation_image(request):
+    if request.POST:
+        form = PresentationImageForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            instance = form.instance
+            product = Product.objects.get(id=request.POST.get('pid'))
+            product.presentation_images.add(instance)
+            data_response = {'success': True, 'img': instance.image.url, 'img_id': instance.id}
+        else:
+            data_response = {'success': False}
+        return HttpResponse(json.dumps(data_response), content_type='application/json')
+
+
+def del_presentation_image(request):
+    if request.POST:
+        img_id = request.POST.get('img_id')
+        if PresentationImages.objects.filter(id=img_id).exists():
+            img = PresentationImages.objects.get(id=img_id)
+            img.delete()
+            data_response = {'success': True}
+        else:
+            data_response = {'success': False}
+        return HttpResponse(json.dumps(data_response), content_type='application/json')
 
 
 def compare_page(request, cid):
@@ -231,6 +257,7 @@ def seller_products(request):
         context.update({'product_edit': product_to_edit})
         context.update({'attributes': attributes})
     if request.POST and action == 'edit':
+
         brand = Brand.objects.get(id=request.user.brand.id)
         category = Product.objects.get(id=request.POST.get('pid')).cid.get()
         attributes = category.attributes.values()
@@ -238,13 +265,16 @@ def seller_products(request):
         product.update(title=request.POST.get('prod_name'),
                        brand=brand,
                        price=float(request.POST.get('prod_price')),
-                       author=request.user)
+                       author=request.user,
+                       stock=request.POST.get('prod_stock'))
         list_attrs = []
         for attr in attributes:
             prod_attr = ProductAttrs.objects.get(fkey_attr_id=attr['id'], value=request.POST.get(str(attr['id'])))
             list_attrs.append(prod_attr)
         product[0].attrs.set(list_attrs)
-
+        form_image = ProductImage(request.POST, request.FILES, instance=product[0])
+        if form_image.is_valid():
+            form_image.save()
     if request.POST and action == 'create':
         categories = Categories.objects.all()
         context.update({'categories': categories})
@@ -255,14 +285,17 @@ def seller_products(request):
         categories = Categories.objects.all()
         context.update({'categories': categories})
     if request.POST and action == 'create_product':
+
         attributes = Categories.objects.get(id=request.POST.get('cid')).attributes.values()
         category = Categories.objects.get(id=request.POST.get('cid'))
         brand = Brand.objects.get(id=request.user.brand.id)
         product = Product.objects.create(title=request.POST.get('prod_name'),
                                          brand=brand,
                                          price=float(request.POST.get('prod_price')),
-                                         author=request.user)
+                                         author=request.user,
+                                         stock=request.POST.get('prod_stock'))
         product.cid.set([category])
+
         if category not in brand.categories.all():
             brand.categories.add(category)
         for attr in attributes:
@@ -276,6 +309,9 @@ def seller_products(request):
                 prod_attr.save()
                 product.attrs.add(prod_attr)
         product.save()
+        form_image = ProductImage(request.POST, request.FILES, instance=product)
+        if form_image.is_valid():
+            form_image.save()
     if request.POST and action == 'delete':
         Product.objects.get(id=request.POST.get('pid')).delete()
     return render(request, 'seller-products.html', context)
@@ -287,12 +323,12 @@ def all_links(request):
 
 def shop_main_page(request):
     categories = Categories.objects.all()
-    return render(request, 'product/main_page.html', context={'category':categories})
+    return render(request, 'product/main_page.html', context={'category': categories})
 
 
 def category_page(request, pk):
     category = Product.objects.filter(cid=pk)
-    return render(request, 'product/category_page.html', context={'products':category})
+    return render(request, 'product/category_page.html', context={'products': category})
 
 
 def all_product_page(request):
@@ -301,23 +337,24 @@ def all_product_page(request):
     page = 1
     if request.method == 'POST':
         responce = {}
-        page=request.POST.get('page', 1)
-        try:  
-            products = paginator.page(page)  
-        except PageNotAnInteger:  
+        page = request.POST.get('page', 1)
+        try:
+            products = paginator.page(page)
+        except PageNotAnInteger:
             # Если страница не является целым числом, поставим первую страницу  
-            products = paginator.page(1)  
-        except EmptyPage:  
+            products = paginator.page(1)
+        except EmptyPage:
             # Если страница больше максимальной, доставить последнюю страницу результатов  
             products = paginator.page(paginator.num_pages)
         responce['success'] = convert_html.list_products(products)
         responce['pagination'] = convert_html.pagination(products)
         return HttpResponse(json.dumps(responce), content_type='applicaion/json')
     else:
-        products = paginator.page(page) 
+        products = paginator.page(page)
     all_product_html = convert_html.list_products(products)
     pagination = convert_html.pagination(products)
-    return render(request, 'product/all_product_page.html', context={'pagination':pagination, 'products':all_product_html, 'page':page})
+    return render(request, 'product/all_product_page.html',
+                  context={'pagination': pagination, 'products': all_product_html, 'page': page})
 
 
 def product_page_v2(request, pk):
@@ -328,47 +365,48 @@ def product_page_v2(request, pk):
     if len(viewed_products) >= 6: del viewed_products[next(iter(viewed_products))]
     viewed_products_html = convert_html.viewed_products(viewed_products)
     context['product'] = product
-    viewed_products[str(product.id)] = {'id':product.id, 'title':product.title, 'price':product.price, 'desc':product.desc}
+    viewed_products[str(product.id)] = {'id': product.id, 'title': product.title, 'price': product.price,
+                                        'desc': product.desc}
     request.session['viewed_products'] = viewed_products
     context['viewed_products'] = viewed_products_html
     if request.user.is_authenticated:
         try:
-            context['is_wishlist']=product.wishlist_set.get(user = request.user)
+            context['is_wishlist'] = product.wishlist_set.get(user=request.user)
         except Wishlist.DoesNotExist:
             context['is_wishlist'] = False
         try:
-            context['is_sub_edit_price']=product.subeditprice_set.get(user = request.user)
+            context['is_sub_edit_price'] = product.subeditprice_set.get(user=request.user)
         except SubEditPrice.DoesNotExist:
-            context['is_sub_edit_price']=False
+            context['is_sub_edit_price'] = False
         try:
-            context['is_sub_active_product'] = product.subactivateproduct_set.get(user = request.user)
+            context['is_sub_active_product'] = product.subactivateproduct_set.get(user=request.user)
         except SubActivateProduct.DoesNotExist:
             context['is_sub_active_product'] = False
     lst_ids_cats = list(product.cid.values_list('id', flat=True))
     rec_f1 = Product.objects.exclude(pk=product.pk).filter(is_recommend=True, cid__in=lst_ids_cats).order_by('?')[:1]
     rec_f2 = Product.objects.exclude(pk=product.pk).filter(
-        cid__in=lst_ids_cats, 
-        price__gt=product.price*0.7, 
-        price__lt=product.price*1.3).order_by('?')[:5]
-    recommend_products = rec_f1|rec_f2
+        cid__in=lst_ids_cats,
+        price__gt=product.price * 0.7,
+        price__lt=product.price * 1.3).order_by('?')[:5]
+    recommend_products = rec_f1 | rec_f2
     recommend_products = recommend_products[:5]
     context['rating_product'] = product.rating
     if request.user.is_authenticated:
         select_rating = product.select_rating(user=request.user)
-        context['select_rating']=convert_html.select_rating_product(product.id, select_rating)
+        context['select_rating'] = convert_html.select_rating_product(product.id, select_rating)
     context['recommend_pr'] = convert_html.recommend_products(recommend_products)
-    
+
     ### кусок гкода для блока "с этим товаром так же покупают". я понимаю, что это гкод и мне стыдно за него
     ### но оно работает))))
-    all_item = OrderItem.objects.filter(product = product) 
+    all_item = OrderItem.objects.filter(product=product)
     lst_all_order = []
     for i in all_item:
         lst_all_order.append(i.order)
-    
-    all_orderitem_with_product = OrderItem.objects.filter(order__in = lst_all_order).exclude(product=product)
+
+    all_orderitem_with_product = OrderItem.objects.filter(order__in=lst_all_order).exclude(product=product)
     buy_together = all_orderitem_with_product.values(
         'product', 'product__title'
-        ).annotate(all_qty = Sum('qty')).order_by('-all_qty')[:5]
+    ).annotate(all_qty=Sum('qty')).order_by('-all_qty')[:5]
     context['buy_together'] = convert_html.buy_together(buy_together)
 
     return render(request, 'product/product_page.html', context)
@@ -381,31 +419,46 @@ def select_curr(request):
         return HttpResponseRedirect(link)
 
 
+def add_comment(request):
+    if request.POST:
+        comment = request.POST.get('comment')
+        pid = request.POST.get('pid')
+        product = Product.objects.get(id=pid)
+        new_comment = CommentsProduct.objects.create(user=request.user,
+                                                     text=comment)
+        new_comment.save()
+        product.comments.add(new_comment)
+        data_response = {'success': True, 'comment_text': comment}
+
+        return HttpResponse(json.dumps(data_response), content_type='application/json')
+
+
 def basket(request):
     if request.method == 'POST':
-        
-        basket = services.Basket.get_basket(request.user.id) if request.user.is_authenticated else request.session.get('basket', {})
+
+        basket = services.Basket.get_basket(request.user.id) if request.user.is_authenticated else request.session.get(
+            'basket', {})
         type_basket = request.POST.get('type')
         product_id = request.POST.get('id')
         check_promo = request.POST.get('promocode')
-        data_response={}
+        data_response = {}
         product_cnt = request.POST.get('cnt', 1)
         type_add2basket = request.POST.get('type_basket', 'add')
         if int(product_cnt) < 1:
-            data_response={'error':'Минимальное количество - 1'}
-            return HttpResponse(json.dumps(data_response), content_type = 'application/json')
+            data_response = {'error': 'Минимальное количество - 1'}
+            return HttpResponse(json.dumps(data_response), content_type='application/json')
 
-
-        product_cnt = 1 if not product_cnt else product_cnt   
+        product_cnt = 1 if not product_cnt else product_cnt
         if type_basket == 'add':
-            basket = services.Basket.add2basket(basket, product_id, product_cnt, user_id=request.user.id, _type = type_add2basket)
+            basket = services.Basket.add2basket(basket, product_id, product_cnt, user_id=request.user.id,
+                                                _type=type_add2basket)
             if type_add2basket == 'add':
                 data_response = {'success': f'Добавлено в корзину {product_cnt} товаров'}
             elif type_add2basket == 'edit':
                 total_cost = round(sum([i['qty'] * i['price'] for i in basket.values()]), 2)
-                total_cost_resp = f'{total_cost *  request.session["rate_curr"]} {request.session["disp_curr"]}'
-                data_response = {'success':True, 'total_cost':total_cost_resp}
-                
+                total_cost_resp = f'{total_cost * request.session["rate_curr"]} {request.session["disp_curr"]}'
+                data_response = {'success': True, 'total_cost': total_cost_resp}
+
         elif type_basket == 'del':
             basket = services.Basket.del2basket(basket, product_id, request.user.id)
             html_result = ""
@@ -413,34 +466,35 @@ def basket(request):
             for product_val in basket.values():
                 id_product = product_val['id']
                 html_result += f'<tr><th scope="row">{count_items}</th>'
-                html_result += f'<td><a href=\'{reverse("product_page", kwargs={"pk":id_product})}\'">{product_val["title"]}</a></td>'
+                html_result += f'<td><a href=\'{reverse("product_page", kwargs={"pk": id_product})}\'">{product_val["title"]}</a></td>'
                 html_result += f'<td>{product_val["price"] * request.session["rate_curr"]}</td>'
                 html_result += f'<td><input onchange = "edit_qty({id_product}, this.value)" type="number" value="{product_val["qty"]}"></td>'
                 html_result += f'<td><button type=\'submit\' onclick="del_basket({id_product})">X</button></td>'
                 html_result += '</tr>'
-                count_items+=1
-                    
+                count_items += 1
+
             html_result += ''
-            data_response = {'success':'Удалено', 'responce':html_result}
+            data_response = {'success': 'Удалено', 'responce': html_result}
         elif check_promo:
-            promo = Promocode.objects.filter(code = check_promo).first()
+            promo = Promocode.objects.filter(code=check_promo).first()
             if promo:
                 sum_discount = promo.get_sum_discount(basket['full_sum_basket'])
                 if sum_discount:
-                    total_sum = round((basket['full_sum_basket'] + sum_discount)*request.session['rate_curr'], 2)
-                    data_response = {'success':total_sum}
+                    total_sum = round((basket['full_sum_basket'] + sum_discount) * request.session['rate_curr'], 2)
+                    data_response = {'success': total_sum}
                 else:
-                    data_response={'error':'Промо не найден.'}
+                    data_response = {'error': 'Промо не найден.'}
             else:
-                data_response={'error':'Промо не найден.'}
-            
+                data_response = {'error': 'Промо не найден.'}
+
         request.session['basket'] = basket
 
-        return HttpResponse(json.dumps(data_response), content_type = 'application/json')
+        return HttpResponse(json.dumps(data_response), content_type='application/json')
 
 
 def checkout_page(request):
-    basket = services.Basket.get_basket(request.user.id) if request.user.is_authenticated else request.session.get('basket', {})
+    basket = services.Basket.get_basket(request.user.id) if request.user.is_authenticated else request.session.get(
+        'basket', {})
     total_cost = sum([i['qty'] * i['price'] for i in basket.values()])
     delivery = Delivery.objects.all()
     if request.method == 'POST':
@@ -448,13 +502,13 @@ def checkout_page(request):
         responce = {}
         id_delivery = data.get('delivery')
         order_delivery = Delivery.objects.get(pk=id_delivery)
-        order_currency = Currency.objects.get(code = request.session.get('curr_id', 'UAH'))
+        order_currency = Currency.objects.get(code=request.session.get('curr_id', 'UAH'))
         promocode = data.get('promo_code')
         is_promo = False
         if promocode:
             is_promo = Promocode.is_promo(data.get('promo_code'))
             if is_promo:
-                data['promo'] = Promocode.objects.get(code = data['promo_code'])
+                data['promo'] = Promocode.objects.get(code=data['promo_code'])
         data['user'] = request.user if request.user.is_authenticated else ''
         data['currency'] = order_currency
         data['rate_currency'] = order_currency.rate
@@ -468,21 +522,23 @@ def checkout_page(request):
                 subscribe.subscribe_create_order(request.user.id, new_order.id, new_order.get_absolute_url())
             for good in basket.values():
                 item = {
-                    'product':Product.objects.get(pk=good['id']),
-                    'order':new_order,
-                    'qty':good['qty'],
+                    'product': Product.objects.get(pk=good['id']),
+                    'order': new_order,
+                    'qty': good['qty'],
                 }
                 OrderItem.add_item(item)
                 new_order.recalc_order()
-            responce = {'success':True, 'msg':f'Заказ оформлен.<br><a href="{reverse("invoice_page", kwargs={"pk":new_order.id})}">Перейти на страницу заказа</a>'}
+            responce = {'success': True,
+                        'msg': f'Заказ оформлен.<br><a href="{reverse("invoice_page", kwargs={"pk": new_order.id})}">Перейти на страницу заказа</a>'}
         else:
-            responce = {'success':False, 'msg':create_order.errors}
+            responce = {'success': False, 'msg': create_order.errors}
 
         return HttpResponse(json.dumps(responce), content_type='applicaion/json')
-    
-        #return redirect('invoice_page', new_order.id)  
 
-    return render(request, 'product/checkout_page.html', context={'products':basket, 'total_cost':total_cost, 'all_delivery':delivery})
+        # return redirect('invoice_page', new_order.id)
+
+    return render(request, 'product/checkout_page.html',
+                  context={'products': basket, 'total_cost': total_cost, 'all_delivery': delivery})
 
 
 def all_invoices(request):
@@ -498,8 +554,8 @@ def all_invoices(request):
             filter_order = services.OrderServise.filter_order(data)
     context['filter'] = filter_order
     date_default = {
-        'date_start':filter_order.pop('date_start', ''),
-        'date_end':filter_order.pop('date_end', ''),
+        'date_start': filter_order.pop('date_start', ''),
+        'date_end': filter_order.pop('date_end', ''),
     }
     all_invoices = Order.objects.filter(**filter_order).order_by('-pk')
     all_status = forms.ChangeStatusOrder()
@@ -514,7 +570,7 @@ def change_invoice(request):
     if request.method == 'POST':
         link = request.META.get('HTTP_REFERER')
         Order.change_status(request.POST.get('id_order'), request.POST.get('status'))
-        return HttpResponseRedirect(link)    
+        return HttpResponseRedirect(link)
 
 
 def get_invoice(request, pk):
@@ -525,7 +581,7 @@ def get_invoice(request, pk):
     digital_links = {}
     if order.status == 'paid':
         for good in goods:
-            product_in_inv = get_object_or_404(Product, pk = good.id_good)
+            product_in_inv = get_object_or_404(Product, pk=good.id_good)
             type_good = product_in_inv.type_product
             if type_good == 'file':
                 link_product_file = product_in_inv.file_digit.url
@@ -545,15 +601,15 @@ def get_invoice(request, pk):
         if meta == 'pay_order':
             if context.get('pay'):
                 context['pay'] = not order.payment()
-        elif meta=='cancel_order' and context.get('cancel_order'):
-                context['cancel_order'] = not order.cancel_order()
-                context['pay'] = True
+        elif meta == 'cancel_order' and context.get('cancel_order'):
+            context['cancel_order'] = not order.cancel_order()
+            context['pay'] = True
 
     context['order'] = order
     context['goods'] = goods
     context['digital'] = digital_links
     if order.delivery_department:
-        wh_info = DeliveryWarehousesNP.objects.get(ref_warehouse = order.delivery_department)
+        wh_info = DeliveryWarehousesNP.objects.get(ref_warehouse=order.delivery_department)
         context['delivery_department'] = f'{wh_info.city.city}, <br>{wh_info.description_ru}'
     return render(request, template, context=context)
 
@@ -565,7 +621,7 @@ def edit_invoice(request, pk):
     goods = order.orderitem_set.all()
     context['order'] = order
     if request.method == 'POST':
-        mode  = request.POST.get('mode') 
+        mode = request.POST.get('mode')
         data = request.POST
         if mode == 'edit_invoice':
             for good in goods:
@@ -577,28 +633,27 @@ def edit_invoice(request, pk):
                     break
                 if edit_price and edit_qty:
                     if del_good:
-                        OrderItem.objects.get(pk = good.id).delete()
+                        OrderItem.objects.get(pk=good.id).delete()
                         continue
-                    
-                    item_info={
-                        'pk':good.id,
-                        'price':edit_price,
-                        'qty':edit_qty,
+
+                    item_info = {
+                        'pk': good.id,
+                        'price': edit_price,
+                        'qty': edit_qty,
                     }
                     OrderItem.add_item(item_info)
             goods = order.orderitem_set.all()
-        
+
         elif mode == 'add_good':
-            product = get_object_or_404(Product, pk = data.get('id_good'))
+            product = get_object_or_404(Product, pk=data.get('id_good'))
             item_info = {
-                'product':product,
-                'order':order,
+                'product': product,
+                'order': order,
             }
             OrderItem.add_item(item_info)
         order.recalc_order()
     context['goods'] = goods
-                
-            
+
     return render(request, template, context=context)
 
 
@@ -609,7 +664,7 @@ def create_promocode(request):
         create_code = forms.CreatePromo(request.POST)
         if create_code.is_valid():
             create_code.save()
-    return render(request, template, context={'form':form})
+    return render(request, template, context={'form': form})
 
 
 def edit_price_in_category(request):
@@ -622,9 +677,9 @@ def edit_price_in_category(request):
         data_for_edit = services.ProductServices.data_preparation_edit_price(data)
         products = services.ProductServices.get_all_products_in_categories(data_for_edit['lst_cats_id'])
         services.ProductServices.edit_price_products(
-            type_edit = data_for_edit['type_edit'], 
-            value_edit = data_for_edit['value_edit'], 
-            is_edit_old_price = data_for_edit['is_edit_old_price']
+            type_edit=data_for_edit['type_edit'],
+            value_edit=data_for_edit['value_edit'],
+            is_edit_old_price=data_for_edit['is_edit_old_price']
         )
 
     return render(request, template, context)
@@ -638,10 +693,11 @@ def export_products(request):
         type_file = request.POST.get('type', 'csv')
         export_file = services.ProductServices.export_to_file(type_file)
         if export_file:
-            data_response['success'] = export_file            
-        return HttpResponse(json.dumps(data_response), content_type = 'application/json')
+            data_response['success'] = export_file
+        return HttpResponse(json.dumps(data_response), content_type='application/json')
 
     return render(request, template, context)
+
 
 def import_products(request):
     template = 'product/import.html'
@@ -666,7 +722,7 @@ def import_products(request):
             else:
                 data_response['error'] = 'Файл по указанной сыслке недоступен.'
 
-        return HttpResponse(json.dumps(data_response), content_type = 'application/json')
+        return HttpResponse(json.dumps(data_response), content_type='application/json')
 
     return render(request, template)
 
@@ -680,13 +736,12 @@ def matrix(request):
         matrix_imets = matrix.pricematrixitem_set.all()
         context['all_matrix'][matrix.name] = {}
         for item in matrix_imets:
-            context['all_matrix'][matrix.name][f'min_{item.pk}'] = item.min_value 
-            context['all_matrix'][matrix.name][f'max_{item.pk}'] = item.max_value 
-            context['all_matrix'][matrix.name][f'type_{item.pk}'] = item.type_item 
-            context['all_matrix'][matrix.name][f'value{item.pk}'] = item.value 
-            context['all_matrix'][matrix.name]['id'] = item.pk 
+            context['all_matrix'][matrix.name][f'min_{item.pk}'] = item.min_value
+            context['all_matrix'][matrix.name][f'max_{item.pk}'] = item.max_value
+            context['all_matrix'][matrix.name][f'type_{item.pk}'] = item.type_item
+            context['all_matrix'][matrix.name][f'value{item.pk}'] = item.value
+            context['all_matrix'][matrix.name]['id'] = item.pk
     return render(request, template, context)
-
 
 
 def wishlist(request):
@@ -694,34 +749,33 @@ def wishlist(request):
         data_response = {}
         data = request.POST
         type_action = data.get('type')
-        product = get_object_or_404(Product, pk = data.get('id'))
+        product = get_object_or_404(Product, pk=data.get('id'))
         if type_action == 'add':
             if not product.is_wishlist(request.user):
                 product.add_to_wishlist(request.user)
-                data_response['success'] = {'msg':'Товар добавлен в список желаний'}
+                data_response['success'] = {'msg': 'Товар добавлен в список желаний'}
             else:
-                data_response['error'] = {'msg':'Товар уже в списке желаний'}
+                data_response['error'] = {'msg': 'Товар уже в списке желаний'}
         elif type_action == 'del':
             if product.del_to_wishlist(request.user):
-                data_response['success'] = {'msg':'Товар удален из списка желаний'}
+                data_response['success'] = {'msg': 'Товар удален из списка желаний'}
             else:
-                data_response['error'] = {'msg':'Товар не найден в списке желаний'}
-        elif type_action=='del_for_wishlist':
-            if product.del_to_wishlist(request.user):            
-                wishlist = Wishlist.objects.filter(user = request.user)
+                data_response['error'] = {'msg': 'Товар не найден в списке желаний'}
+        elif type_action == 'del_for_wishlist':
+            if product.del_to_wishlist(request.user):
+                wishlist = Wishlist.objects.filter(user=request.user)
                 data_response['success'] = convert_html.my_wishlist(wishlist)
             else:
-                data_response['error'] = {'msg':'Товар не найден в списке желаний'}
-        return HttpResponse(json.dumps(data_response), content_type = 'application/json')
+                data_response['error'] = {'msg': 'Товар не найден в списке желаний'}
+        return HttpResponse(json.dumps(data_response), content_type='application/json')
 
 
     elif request.method == 'GET':
         context = {}
         template = 'product/wishlist.html'
-        wishlist = Wishlist.objects.filter(user = request.user)
-        context['products'] = convert_html.my_wishlist(wishlist) 
+        wishlist = Wishlist.objects.filter(user=request.user)
+        context['products'] = convert_html.my_wishlist(wishlist)
         return render(request, template, context)
-
 
 
 def subeditprice(request):
@@ -729,26 +783,26 @@ def subeditprice(request):
         data_response = {}
         data = request.POST
         type_action = data.get('type')
-        product = get_object_or_404(Product, pk = data.get('id'))
+        product = get_object_or_404(Product, pk=data.get('id'))
         if type_action == 'add':
             item, create = SubEditPrice.objects.get_or_create(
-                user = request.user,
-                product = product,
+                user=request.user,
+                product=product,
             )
             if create:
-                data_response['success'] = {'msg':'Товар добавлен в подписки'}
+                data_response['success'] = {'msg': 'Товар добавлен в подписки'}
             else:
-                data_response['error'] = {'msg':'Ты уже подписан'}
+                data_response['error'] = {'msg': 'Ты уже подписан'}
         elif type_action == 'del':
             try:
                 SubEditPrice.objects.get(
-                    user = request.user, 
-                    product = product,
+                    user=request.user,
+                    product=product,
                 ).delete()
-                data_response['success'] = {'msg':'Подписка отменена'}
+                data_response['success'] = {'msg': 'Подписка отменена'}
             except SubEditPrice.DoesNotExist:
-                data_response['error'] = {'msg':'Товар не найден в подписках'}
-        return HttpResponse(json.dumps(data_response), content_type = 'application/json')
+                data_response['error'] = {'msg': 'Товар не найден в подписках'}
+        return HttpResponse(json.dumps(data_response), content_type='application/json')
 
 
 def subactivateproduct(request):
@@ -756,26 +810,26 @@ def subactivateproduct(request):
         data_response = {}
         data = request.POST
         type_action = data.get('type')
-        product = get_object_or_404(Product, pk = data.get('id'))
+        product = get_object_or_404(Product, pk=data.get('id'))
         if type_action == 'add':
             item, create = SubActivateProduct.objects.get_or_create(
-                user = request.user,
-                product = product,
+                user=request.user,
+                product=product,
             )
             if create:
-                data_response['success'] = {'msg':'Мы сообщим!'}
+                data_response['success'] = {'msg': 'Мы сообщим!'}
             else:
-                data_response['error'] = {'msg':'Ты уже подписан'}
+                data_response['error'] = {'msg': 'Ты уже подписан'}
         elif type_action == 'del':
             try:
                 SubActivateProduct.objects.get(
-                    user = request.user, 
-                    product = product,
+                    user=request.user,
+                    product=product,
                 ).delete()
-                data_response['success'] = {'msg':'Подписка отменена'}
+                data_response['success'] = {'msg': 'Подписка отменена'}
             except SubActivateProduct.DoesNotExist:
-                data_response['error'] = {'msg':'Товар не найден в подписках'}
-        return HttpResponse(json.dumps(data_response), content_type = 'application/json')
+                data_response['error'] = {'msg': 'Товар не найден в подписках'}
+        return HttpResponse(json.dumps(data_response), content_type='application/json')
 
 
 def rating_product(request):
@@ -785,7 +839,7 @@ def rating_product(request):
         mark = int(data.get('mark', 0))
         try:
             product = Product.objects.get(pk=data.get('id'))
-            if mark==0:
+            if mark == 0:
                 try:
                     pr_delete = product.rating_product.get(user=request.user)
                     pr_delete.delete()
@@ -794,8 +848,8 @@ def rating_product(request):
                 except RatingProduct.DoesNotExist:
                     data_response['error'] = 'You have not voted yet.'
             else:
-                product.rating_product.update_or_create(user=request.user, 
-                    defaults={'value_rating': data.get('mark')})
+                product.rating_product.update_or_create(user=request.user,
+                                                        defaults={'value_rating': data.get('mark')})
                 data_response['success'] = 'Thanks'
             data_response['new_avg'] = Product.objects.get(pk=data.get('id')).rating
         except Product.DoesNotExist:
@@ -805,8 +859,9 @@ def rating_product(request):
 
 def calc_delivery(request):
     data_response = {}
-    basket = services.Basket.get_basket(request.user.id) if request.user.is_authenticated else request.session.get('basket', {})
-    
+    basket = services.Basket.get_basket(request.user.id) if request.user.is_authenticated else request.session.get(
+        'basket', {})
+
     if request.method == 'POST':
         data = request.POST
         total_cost = sum([i['qty'] * i['price'] for i in basket.values()])
@@ -820,7 +875,8 @@ def calc_delivery(request):
         else:
             if data.get('type_d') == 'novaposhta':
                 sel_val = data.get('ref') if data.get('ref') else data.get('sel_val')
-                all_values = services.DeliveryFunc.novaposhta(data.get('type_v'), sel_val, total_cost, data.get('sel_val'))
+                all_values = services.DeliveryFunc.novaposhta(data.get('type_v'), sel_val, total_cost,
+                                                              data.get('sel_val'))
                 if not all_values.get('cost'):
                     html_result = convert_html.delivery_np(all_values)
                     if html_result:
@@ -828,7 +884,7 @@ def calc_delivery(request):
                 else:
                     data_response = all_values
 
-        #стоимость переводим в курс
+        # стоимость переводим в курс
         if data_response.get('cost'):
             cost_in_curr = round(data_response.get("cost") * request.session["rate_curr"], 2)
             data_response['cost'] = f'{cost_in_curr} {request.session["disp_curr"]}'
@@ -836,10 +892,9 @@ def calc_delivery(request):
     return HttpResponse(json.dumps(data_response), content_type='application/json')
 
 
-
 def update_cities_np(request):
     link = 'https://api.novaposhta.ua/v2.0/json/'
-    headers = {'Content-Type':'application/json',}
+    headers = {'Content-Type': 'application/json', }
     data = (
         '{"modelName": "Address",'
         '"calledMethod": "getCities",'
@@ -851,15 +906,14 @@ def update_cities_np(request):
         for item in responce['data']:
             city_ua = item['Description']
             data_city = {
-                'city':item['DescriptionRu'],
-                'city_ref':item['Ref'],
-                'cityID':item['CityID'],
-                'region_ua':item['AreaDescription'],
-                'region':item['AreaDescriptionRu'],
+                'city': item['DescriptionRu'],
+                'city_ref': item['Ref'],
+                'cityID': item['CityID'],
+                'region_ua': item['AreaDescription'],
+                'region': item['AreaDescriptionRu'],
             }
             DeliveryCitiesNP.objects.update_or_create(city_ua=city_ua, defaults=data_city)
     return HttpResponse(json.dumps(responce), content_type='application/json')
-
 
 
 def update_warehouses_np(request):
@@ -870,7 +924,7 @@ def update_warehouses_np(request):
         '"methodProperties": {"Language": "ru"},'
         f'"apiKey": "{os.environ.get("TOKEN_NP")}"}}'
     )
-    headers = {'Content-Type':'application/json',}
+    headers = {'Content-Type': 'application/json', }
     req = requests.post(link, data=data, headers=headers)
     responce = req.json()
     if responce.get('success'):
@@ -880,21 +934,21 @@ def update_warehouses_np(request):
             except:
                 print(item)
                 continue
-            item_ref =item.get('Ref')
+            item_ref = item.get('Ref')
             data_warehouse = {
-                'city':city,
-                'sitekey':item.get('SiteKey'),
-                'description':item.get('Description'),
-                'description_ru':item.get('DescriptionRu'),
-                'short_address':item.get('ShortAddress'),
-                'short_address_ru':item.get('ShortAddressRu'),
-                'number_warehouse':item.get('Number'),
+                'city': city,
+                'sitekey': item.get('SiteKey'),
+                'description': item.get('Description'),
+                'description_ru': item.get('DescriptionRu'),
+                'short_address': item.get('ShortAddress'),
+                'short_address_ru': item.get('ShortAddressRu'),
+                'number_warehouse': item.get('Number'),
             }
             DeliveryWarehousesNP.objects.update_or_create(
                 ref_warehouse=item_ref,
-                defaults = data_warehouse
+                defaults=data_warehouse
             )
-            
+
     return HttpResponse(json.dumps(responce), content_type='application/json')
 
 
@@ -909,10 +963,10 @@ def parser_rozetka_view(request):
         link = data.get('link')
         search_category = re.search(r'rozetka.com.ua/.+/\D(\d+)/', link)
         if not search_category:
-            responce = {'error':'Ссылка введена неверно.'}
+            responce = {'error': 'Ссылка введена неверно.'}
         else:
             parser_rozetka.get_all_ids_goods(search_category[1])
-            responce = {'success':'Материалы украли))'}
+            responce = {'success': 'Материалы украли))'}
 
         return HttpResponse(json.dumps(responce), content_type='applicaion/json')
 
@@ -931,18 +985,18 @@ def select_courier(request):
                 courier = Group.objects.get(name='Courier').user_set.get(pk=data['courier'])
                 order.courier = courier
                 order.save()
-            responce = {'success':'Сохранено'}
+            responce = {'success': 'Сохранено'}
         except models.CustomUser.DoesNotExist:
-            responce = {'error':'User not found'}
+            responce = {'error': 'User not found'}
         except Order.DoesNotExist:
-            responce = {'error':'Order not found'}
+            responce = {'error': 'Order not found'}
 
         return HttpResponse(json.dumps(responce), content_type='applicaion/json')
 
 
 def courier_page(request):
     context = {}
-    context['all_invoices'] = Order.objects.filter(courier = request.user)
+    context['all_invoices'] = Order.objects.filter(courier=request.user)
     context['all_status'] = forms.ChangeStatusOrder()
 
     return render(request, 'product/courier_page.html', context)

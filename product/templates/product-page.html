@@ -6,124 +6,175 @@
     <script src="/static/js/product_tabs.js"></script>
 {% endblock %}
 {% block body %}
-    <div><span class="product_title">{{ product.title }}</span></div>
+    <div><a class="product_title" style="text-decoration: none;color: dodgerblue;"
+            href="{% url 'search_products_page' %}?q={{ product.cid.get.name }}">{{ product.cid.get.name }} </a><span
+            class="product_title"> > {{ product.title }}</span></div>
     <div class="tab">
         <button class="tablinks" onclick="openCity(event, 'Info')" id="default">Info</button>
         <button class="tablinks" onclick="openCity(event, 'About')">About</button>
         <button class="tablinks" onclick="openCity(event, 'Comments')">Comments</button>
     </div>
     <div id="Info" class="tabcontent">
-        <div class="product_tab">
-            <div class="product_image_side">
-                {% if product.photo %}
-                    <img src="{{ product.photo.url }}">
-                {% else %}
-                    <img class="product_img" src="/static/img.jpeg">
-                {% endif %}
-            </div>
-            <div>
-                <div class="buy-information">
-                    <div>
+        <div class="product_tab" style="display: block">
+            <div style="display: flex;justify-content: center;width: 2000px;">
+                <div class="product_image_side">
+                    {% if product.photo %}
+                        <img class="product_img" src="{{ product.photo.url }}">
+                    {% else %}
+                        <img class="product_img" src="/static/img.jpeg">
+                    {% endif %}
+                </div>
+                <div>
+                    <div class="buy-information">
                         <div>
-                            {% if product.stock == 0 %}
-                                <span style="color: darkgray;font-size: 30px;">out of stock :(</span><br>
-                                {% if is_sub_active_product %}
-                                    <button class="button-available" type="button" onclick="subactivateproduct('{{ product.id }}', 'del')"
-                                            id='btn_subactivateproduct'>don't inform about the availability
-                                    </button>
+                            <div>
+                                {% if product.stock == 0 %}
+                                    <span style="color: darkgray;font-size: 30px;">out of stock :(</span><br>
+                                    {% if is_sub_active_product %}
+                                        <button class="button-available" type="button"
+                                                onclick="subactivateproduct('{{ product.id }}', 'del')"
+                                                id='btn_subactivateproduct'>don't inform about the availability
+                                        </button>
+                                    {% else %}
+                                        <button class="button-available" type="button"
+                                                onclick="subactivateproduct('{{ product.id }}', 'add')"
+                                                id='btn_subactivateproduct'>inform about the availability
+                                        </button>
+                                    {% endif %}
                                 {% else %}
-                                    <button class="button-available" type="button" onclick="subactivateproduct('{{ product.id }}', 'add')"
-                                            id='btn_subactivateproduct'>inform about the availability
-                                    </button>
+                                    {% if product.old_price != 0 %}
+                                        <span>old price: {{ product.old_price }}</span><br>
+                                        <span class="product_price red">{{ product.price|mul:rate_select_currency }} {{ disp_select_currency }}</span>
+                                        <br>
+                                    {% else %}
+                                        <span class="product_price">{{ product.price|mul:rate_select_currency }} {{ disp_select_currency }}</span>
+                                        <br>
+                                    {% endif %}
                                 {% endif %}
-                            {% else %}
-                                {% if product.old_price != 0 %}
-                                    <span>old price: {{ product.old_price }}</span><br>
-                                    <span class="product_price red">{{ product.price|mul:rate_select_currency }} {{ disp_select_currency }}</span>
-                                    <br>
-                                {% else %}
-                                    <span class="product_price">{{ product.price|mul:rate_select_currency }} {{ disp_select_currency }}</span>
-                                    <br>
-                                {% endif %}
-                            {% endif %}
-                            <span class="product_brand">
+                                <span class="product_brand">
                                 Brand:
                                 <a href="{% url 'brand_page' product.brand_id %}">
                                     {{ product.brand.name }}
                                 </a>
                             </span>
+                            </div>
                         </div>
+                        <div class="button-buy-box">
+                            <form action="" method="post" style="width: 200px;">
 
+                                {% csrf_token %}
+                                <button class="button-buy" name="action" value="add_to_compare">Compare</button>
+                                <button class="button-buy" type='submit' onclick="add2basket('{{ product.id }}')"
+                                        id="btn_add2basket">Buy
+                                </button>
+                                <div>
+                                    {% if request.user.is_authenticated %}
+                                        {% if is_wishlist %}
+                                            <button style="display: table-row" class="button-unlike" type="button"
+                                                    onclick="wishlist('{{ product.id }}', 'del')"
+                                                    id='btn_wishlist'>
+                                                unlike
+                                            </button>
+                                            <button style="display: none" class="button-like" type="button"
+                                                    onclick="wishlist('{{ product.id }}', 'add')"
+                                                    id='btn_wishlist'>
+                                                like
+                                            </button>
+                                        {% else %}
+                                            <button style="display: none" class="button-unlike" type="button"
+                                                    onclick="wishlist('{{ product.id }}', 'del')"
+                                                    id='btn_wishlist'>
+                                                unlike
+                                            </button>
+                                            <button style="display: table-row" class="button-like" type="button"
+                                                    onclick="wishlist('{{ product.id }}', 'add')"
+                                                    id='btn_wishlist'>
+                                                like
+                                            </button>
+                                        {% endif %}
+                                        {% if is_sub_edit_price %}
+                                            <button class="button-buy" style="width: 120px;" type="button"
+                                                    onclick="subeditprice('{{ product.id }}', 'del')"
+                                                    id='btn_subeditprice'>
+                                                Unfollow price
+                                            </button>
+                                        {% else %}
+                                            <button class="button-buy" style="width: 120px;" type="button"
+                                                    onclick="subeditprice('{{ product.id }}', 'add')"
+                                                    id='btn_subeditprice'>
+                                                Follow price
+                                            </button>
+                                        {% endif %}
+
+                                        </div>
+                                    {% endif %}
+                            </form>
+                        </div>
                     </div>
-                    <div class="button-buy-box">
-                        <form action="" method="post" style="width: 200px;">
-
-                            {% csrf_token %}
-                            <button class="button-buy" name="action" value="add_to_compare">Compare</button>
-                            <button class="button-buy" type='submit' onclick="add2basket('{{ product.id }}')"
-                                    id="btn_add2basket">Buy
-                            </button>
+                    <div style="background-color: #f5f5f5;padding: 30px;border-radius: 10px;width: 500px;display: flex;margin-top:10px;align-items: center;">
+                        {% if rating_product %}
+                            <b><span id='rating'>Raiting: {{ rating_product }}</span></b>
+                        {% else %}
                             <div>
-                                {% if request.user.is_authenticated %}
-                                    {% if is_wishlist %}
-                                        <button style="display: table-row" class="button-unlike" type="button"
-                                                onclick="wishlist('{{ product.id }}', 'del')"
-                                                id='btn_wishlist'>
-                                            unlike
-                                        </button>
-                                        <button style="display: none" class="button-like" type="button"
-                                                onclick="wishlist('{{ product.id }}', 'add')"
-                                                id='btn_wishlist'>
-                                            like
-                                        </button>
-                                    {% else %}
-                                        <button style="display: none" class="button-unlike" type="button"
-                                                onclick="wishlist('{{ product.id }}', 'del')"
-                                                id='btn_wishlist'>
-                                            unlike
-                                        </button>
-                                        <button style="display: table-row" class="button-like" type="button"
-                                                onclick="wishlist('{{ product.id }}', 'add')"
-                                                id='btn_wishlist'>
-                                            like
-                                        </button>
-                                    {% endif %}
-                                    {% if is_sub_edit_price %}
-                                        <button class="button-buy" style="width: 120px;" type="button"
-                                                onclick="subeditprice('{{ product.id }}', 'del')"
-                                                id='btn_subeditprice'>
-                                            Unfollow price
-                                        </button>
-                                    {% else %}
-                                        <button class="button-buy" style="width: 120px;" type="button"
-                                                onclick="subeditprice('{{ product.id }}', 'add')"
-                                                id='btn_subeditprice'>
-                                            Follow price
-                                        </button>
-                                    {% endif %}
-
-                                    </div>
-                                {% endif %}
-                        </form>
+                                <b><span id='rating'>This product is not yet rated.</span></b>
+                            </div>
+                        {% endif %}
+                        {% if request.user.is_authenticated %}
+                            <div id='block_rating' style="margin-left: auto;">
+                                <span>Select raiting:</span>
+                                <div>{{ select_rating|safe }}</div>
+                            </div>
+                        {% endif %}
                     </div>
-                </div>
-                <div style="background-color: #f5f5f5;padding: 30px;border-radius: 10px;width: 500px;display: flex;margin-top:10px;align-items: center;">
-                    {% if rating_product %}
-                        <b><span id='rating'>Raiting: {{ rating_product }}</span></b>
-                    {% else %}
-                        <div>
-                            <b><span id='rating'>This product is not yet rated.</span></b>
-                        </div>
-                    {% endif %}
-                    {% if request.user.is_authenticated %}
-                        <div id='block_rating' style="margin-left: auto;">
-                            <span>Select raiting:</span>
-                            <div>{{ select_rating|safe }}</div>
-                        </div>
-                    {% endif %}
                 </div>
             </div>
         </div>
+        {% if product.presentation_images %}
+            <div id="presentation_cards" style="margin-top: 20px;">
+                {% for image in product.presentation_images.all %}
+                    <div id="img_{{ image.id }}" style="text-align: center;margin-top: 10px;">
+                        <img style="width: 1200px;height: 400px;border-radius: 10px;object-fit: cover;}"
+                             src="{{ image.image.url }}">
+                        {% if product.author.id == request.user.id %}
+                            <button onclick="del_img({{ image.id }})">delete</button>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% if product.author.id == request.user.id %}
+            <div style="background-color: lightgray;width: 1200px;height: 400px;margin: auto;border-radius: 10px;margin-top: 30px;">
+                <div style="margin: auto;width: 500px;text-align: center;">
+                    <form id="upload_present_photos" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <span style="font-size: 30px;color: gray;">recommended size: 1200x400px</span>
+                        <input type="file" name="image" accept="image/*" id="id_image">
+                        <input type="hidden" name="pid" value="{{ product.id }}">
+                        <button>upload</button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+        {% if product.file_digit %}{{ product.file_digit.url }}{% endif %}
+
+        {% if viewed_products %}
+            <h2>Просмотренные товары:</h2>
+            <div class="card-group" style="display: flex;">
+                {{ viewed_products|safe }}
+            </div>
+        {% endif %}
+        {% if recommend_pr %}
+            <br><br><h2>Похожие товары:</h2>
+            <div class="card-group" style="display: flex;">
+                {{ recommend_pr|safe }}
+            </div>
+        {% endif %}
+        {% if buy_together %}
+            <br><br><h2>Покупают вместе</h2>
+            <div class="card-group" style="display: flex;">
+                {{ buy_together|safe }}
+            </div>
+        {% endif %}
     </div>
 
     <div id="About" class="tabcontent">
@@ -138,47 +189,88 @@
     <div id="Comments" class="tabcontent">
         <div>
             {% if user.is_authenticated %}
-                <form action="" method="post">
-                    {% csrf_token %}
-                    <textarea name="comment"></textarea><br>
-                    <button name="action" value="addcom" type="submit">Добавить</button>
-                </form>
-            {% endif %}
-            {% for comm in product.comments.all %}
-                <div class="comment_card">
-                    <div class="comment_user">{{ comm.user.username }}</div>
-                    <div class="comment_text">{{ comm.text }}</div>
+                <div>
+                    <textarea name="comment" id="comment_text"></textarea><br>
+                    <button name="action" value="addcom" onclick="add_comment()">Добавить</button>
                 </div>
-            {% endfor %}
+            {% endif %}
+            <div class="comments_all">
+                {% for comm in product.comments.all %}
+                    <div class="comment_card">
+                        <div class="comment_user">{{ comm.user.username }}</div>
+                        <div class="comment_text">{{ comm.text }}</div>
+                    </div>
+                {% endfor %}
+            </div>
         </div>
     </div>
     <script>
         document.getElementById("default").click();
     </script>
 
-    {% if product.file_digit %}{{ product.file_digit.url }}{% endif %}
-
-    </form>
-    {% if viewed_products %}
-        <h2>Просмотренные товары:</h2>
-        <div class="card-group">
-            {{ viewed_products|safe }}
-        </div>
-    {% endif %}
-    {% if recommend_pr %}
-        <br><br><h2>Похожие товары:</h2>
-        <div class="card-group">
-            {{ recommend_pr|safe }}
-        </div>
-    {% endif %}
-    {% if buy_together %}
-        <br><br><h2>Покупают вместе</h2>
-        <div class="card-group">
-            {{ buy_together|safe }}
-        </div>
-    {% endif %}
-
     <script>
+        function del_img(img_id) {
+            $.ajax({
+                type: 'POST', url: '{% url "del_presentation_image" %}',
+                data: {'csrfmiddlewaretoken': scrf_token, 'img_id': img_id},
+                dataType: 'json',
+                cache: false,
+                success: function (data) {
+                    if (data.success) {
+                        var img_card = "#img_" + img_id;
+                        $(img_card).remove();
+                    } else {
+
+                    }
+                }
+            });
+        }
+
+        $('#upload_present_photos').submit(function (e) {
+            e.preventDefault();
+            $form = $(this)
+            var formData = new FormData(this);
+            $.ajax({
+                url: {% url 'add_presentation_image' %},
+                type: 'POST',
+                data: formData,
+                success: function (response) {
+                    {#$('.error').remove();#}
+                    console.log(response)
+                    if (response.success) {
+                        $img_card = $('<div id="img_' + response.img_id + '" style="text-align: center;margin-top: 10px;"> <img style="width: 1200px;height: 400px;border-radius: 10px;object-fit: cover;}"src=' + response.img + '> <button onclick="del_img(' + response.img_id + ')">delete</button></div>');
+                        $img_card.appendTo('#presentation_cards');
+                    } else {
+                        {#window.location = ""#}
+                    }
+                },
+                cache: false,
+                contentType: false,
+                processData: false
+            });
+        });
+
+        function add_comment() {
+            var comment_text = $('#comment_text').val();
+            $.ajax({
+                type: 'POST', url: '{% url "add_comment" %}',
+                data: {'csrfmiddlewaretoken': scrf_token, 'comment': comment_text, 'pid': {{ product.id }}},
+                dataType: 'json',
+                cache: false,
+                success: function (data) {
+                    if (data.success) {
+                        var $comment = $('<div class="comment_card"><div class="comment_user">{{ request.user.username }}</div> <div class="comment_text">' + data.comment_text + '</div></div>');
+                        $comment.appendTo('.comments_all');
+                    } else {
+                        {#var $item = $('<span class="msg">' + data.error + '</span>');#}
+                        {#$item.appendTo('.form_add_basket').delay(4000).slideUp(500, function () {#}
+                        {#    $item.remove();#}
+                        // });
+                    }
+                }
+            });
+        }
+
         function add2basket(id) {
             $.ajax({
                 type: 'POST', url: '{% url "basket_page" %}',

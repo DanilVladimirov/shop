@@ -3,7 +3,12 @@
     <link rel="stylesheet" href="/static/css/user-page.css">
 {% endblock %}
 {% block body %}
+
     <div class="control_panel_div">
         <button onclick="location.href='{% url 'logout' %}'" class="btn_signout">sign out</button>
+        {% load shop_tags %}
+        {% if request.user|has_group:"Seller" %}
+            <button class="button_compare" onclick="location.href='{% url 'seller_products' %}'">my products</button>
+        {% endif %}
     </div>
 {% endblock %}

@@ -35,6 +35,4 @@ admin.site.register(Brand)
 admin.site.register(KeyWords)
 admin.site.register(Promotions, PromotionsAdmin)
 admin.site.register(PromotionsTasks)
-
-
-
+admin.site.register(PresentationImages)

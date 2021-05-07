@@ -14,7 +14,6 @@ body {
 }
 
 .topnav a {
-    float: left;
     color: black;
     text-align: center;
     text-decoration: none;
@@ -207,6 +206,26 @@ body {
 .img_trash {
     width: 25px;
 }
-.red {
-    color: #e6493e;
+.categories_popup {
+    background-color: #1b6d85;
+    z-index: 1;
+    width: 200px;
+    height: 200px;
+    position: fixed;
+    margin-top: -36px;
+    border-radius: 10px;
+    margin-left: 92px;
+    opacity: 0;
+    visibility: hidden;
+}
+.categories_popup:target{
+    opacity: 1;
+    visibility: visible;
+    transition: all 0.2s ease;
+}
+.right_side {
+    float: right;
+}
+.left_side {
+    float: left;
 }
