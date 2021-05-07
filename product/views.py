@@ -138,8 +138,9 @@ def product_page(request, pid):
     if len(viewed_products) >= 6: del viewed_products[next(iter(viewed_products))]
     viewed_products_html = convert_html.viewed_products(viewed_products)
     context['product'] = product
+    photo_url = product.photo.url if product.photo else '/static/img.jpeg' 
     viewed_products[str(product.id)] = {'id': product.id, 'title': product.title, 'price': product.price,
-                                        'desc': product.desc}
+                                        'desc': product.desc, 'img_url':photo_url}
     request.session['viewed_products'] = viewed_products
     context['viewed_products'] = viewed_products_html
     if request.user.is_authenticated:

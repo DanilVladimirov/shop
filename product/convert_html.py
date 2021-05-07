@@ -6,6 +6,7 @@ def viewed_products(data):
             f'<div class="card" style="width: 18rem;">'
             f'<div class="card-body">'
             f'<h5 class="card-title">{i["title"]}</h5>'
+            f'<img width="100px" src="{i.get("img_url")}">'
             f'<p class="card-text">{i.get("desc")}</p>'
             f'<a href="/shop/product/{i.get("id")}" class="btn btn-primary">open page</a></div></div>'
             
