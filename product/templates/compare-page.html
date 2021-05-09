@@ -12,16 +12,41 @@
                         <span class="attr_name">{{ attr.fkey_attr.name }}</span>:
                         <span class="attr_value">{{ attr.value }}</span> <br>
                     {% endfor %}
-                    <form action="" method="post">
-                        {% csrf_token %}
-                        <input type="hidden" name="product_id" value="{{ product.id }}">
-                        <button name="action" value="remove">Remove</button>
-                        <button>Buy</button>
-                    </form>
+                    <div style="display: flex;">
+                        <form action="" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            <button name="action" value="remove" style="margin-right: 4px;">Remove</button>
+                        </form>
+                        <button onclick="add2basket('{{ product.id }}')" id="btn_add2basket">Buy</button>
+                    </div>
                 </div>
             {% endfor %}
         {% else %}
             <span class="text_empty">empty.</span>
         {% endif %}
     </div>
+    <script>
+        function add2basket(id) {
+            $.ajax({
+                type: 'POST', url: '{% url "basket_page" %}',
+                data: {'csrfmiddlewaretoken': scrf_token, 'cnt': 1, 'type': 'add', 'id': id,},
+                dataType: 'json',
+                cache: false,
+                success: function (data) {
+                    if (data.success) {
+                        var $item = $('<span class="msg">' + data.success + '</span>');
+                        $item.appendTo('.form_add_basket').delay(4000).slideUp(500, function () {
+                            $item.remove();
+                        });
+                    } else {
+                        var $item = $('<span class="msg">' + data.error + '</span>');
+                        $item.appendTo('.form_add_basket').delay(4000).slideUp(500, function () {
+                            $item.remove();
+                        });
+                    }
+                }
+            });
+        }
+    </script>
 {% endblock %}

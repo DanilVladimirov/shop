@@ -42,6 +42,9 @@ def login_contact(request):
     token = request.GET.get('token')
     result = requests.get('https://contactguys.herokuapp.com/api/user-data/?token='+token)
     dict_user = json.loads(result.text)
+    email = dict_user.get('email')
+    if not email:
+        return redirect('login')
     if CustomUser.objects.filter(email=dict_user['email']).exists():
         user = CustomUser.objects.get(email=dict_user['email'])
         login(request, user)

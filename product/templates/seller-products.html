@@ -53,7 +53,7 @@
                         <input required value="{{ product_edit.title }}" name="prod_name" type="text"
                                placeholder="Name">
                         <span>Price: </span>
-                        <input required value="{{ product_edit.price }}" name="prod_price" type="number"
+                        <input required value="{{ product_edit.price }}" name="prod_price" min="0" type="number"
                                placeholder="Price">
                         <span>Stock: </span>
                         <input required value="{{ product_edit.stock }}" name="prod_stock" type="number"
@@ -101,7 +101,7 @@
                 <div class="attributes">
                     {% csrf_token %}
                     <input required name="prod_name" type="text" placeholder="Name">
-                    <input required name="prod_price" type="number" placeholder="Price">
+                    <input required name="prod_price" type="number" min="0" placeholder="Price">
                     <input required name="prod_stock" type="number" placeholder="Stock">
                     {% for attr in attributes.all %}
                         <span>{{ attr.name }}: </span>
