@@ -29,7 +29,8 @@ from product.views import (search_products,
 from shop.views import (start_page,
                         promotion_page,
                         connect_contact,
-                        login_contact)
+                        login_contact,
+                        test_mail)
 from django.urls import path, include
 
 urlpatterns = [
@@ -47,7 +48,8 @@ urlpatterns = [
     path('seller_products/', seller_products, name='seller_products'),
     path('promo/<int:promo_id>', promotion_page, name='promotion_page'),
     path('getapi/', connect_contact, name='coco'),
-    path('login_contact/', login_contact, name='login_contact_page')
+    path('login_contact/', login_contact, name='login_contact_page'),
+    path('test_mail/', test_mail)
 ]
 urlpatterns += static(settings.STATIC_URL,
                       document_root=settings.STATIC_ROOT)

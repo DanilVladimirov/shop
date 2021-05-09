@@ -4,7 +4,8 @@ from dotenv import load_dotenv
 import os
 import dj_database_url
 import mimetypes
-
+import gdown
+from google.oauth2 import service_account
 
 load_dotenv()
 
@@ -13,8 +14,8 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '!%c$$78v36_ah)-1j8(hxg6u@*fk2*jnut5m$*z&fr^=jsdq%u'
-TG_TOKEN = '1729761851:AAHRK8aaNbAMuOj0qis-xOeB9p_rHZu1TPg'
+SECRET_KEY = os.environ.get('SECRET_KEY')
+TG_TOKEN = os.environ.get('TG_TOKEN')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 SITE_URL = '127.0.0.1:8000'
@@ -181,17 +182,28 @@ mimetypes.add_type("text/css", ".css", True)
 CELERY_TIMEZONE = "Europe/Kiev"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
-CELERY_BROKER_URL = 'redis://:UnXMlKDUIPqJ9pYJXEnqNzFeR52bBLsP@redis-13885.c266.us-east-1-3.ec2.cloud.redislabs.com:13885'
+CELERY_BROKER_URL = os.environ.get('REDIS_URL')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 # media
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+URL_GOOGLE_JSON = os.environ.get('URL_GOOGLE_JSON')
+if os.path.exists(os.path.join(BASE_DIR, 'googledrive.json')):
+    GS_CREDENTIALS = service_account.Credentials.from_service_account_file(os.path.join(BASE_DIR, 'googledrive.json'))
+else:
+    gdown.download(URL_GOOGLE_JSON, quiet=False)
+    GS_CREDENTIALS = service_account.Credentials.from_service_account_file(os.path.join(BASE_DIR, 'googledrive.json'))
+# configuration for media file storing and reriving media file from gcloud
+DEFAULT_FILE_STORAGE = os.environ.get('DEFAULT_FILE_STORAGE')
+GS_PROJECT_ID = os.environ.get('GS_PROJECT_ID')
+GS_BUCKET_NAME = os.environ.get('GS_BUCKET_NAME')
+MEDIA_ROOT = 'media/'
+UPLOAD_ROOT = 'media/uploads/'
+MEDIA_URL = 'https://storage.googleapis.com/{}/'.format(GS_BUCKET_NAME)
 # mail
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'aktezorshop@gmail.com'
-EMAIL_HOST_PASSWORD = 'aktezorgagaga'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = 587

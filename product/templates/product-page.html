@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load mathfilters %}
+{% load product_tags %}
 {% block head %}
     <link rel="stylesheet" href="/static/css/product-page.css">
     <script src="/static/js/product_tabs.js"></script>
@@ -59,55 +60,65 @@
 
                         </div>
                         <div class="button-buy-box">
-                            <form action="" method="post" style="width: 200px;">
 
+                            <form action="" method="post" style="float: right;">
                                 {% csrf_token %}
-                                <button class="button-buy" name="action" value="add_to_compare">Compare</button>
-                                <button class="button-buy" type='submit' onclick="add2basket('{{ product.id }}')"
-                                        id="btn_add2basket">Buy
-                                </button>
-                                <div>
-                                    {% if request.user.is_authenticated %}
-                                        {% if is_wishlist %}
-                                            <button style="display: table-row" class="button-unlike" type="button"
-                                                    onclick="wishlist('{{ product.id }}', 'del')"
-                                                    id='btn_wishlist'>
-                                                unlike
-                                            </button>
-                                            <button style="display: none" class="button-like" type="button"
-                                                    onclick="wishlist('{{ product.id }}', 'add')"
-                                                    id='btn_wishlist'>
-                                                like
-                                            </button>
-                                        {% else %}
-                                            <button style="display: none" class="button-unlike" type="button"
-                                                    onclick="wishlist('{{ product.id }}', 'del')"
-                                                    id='btn_wishlist'>
-                                                unlike
-                                            </button>
-                                            <button style="display: table-row" class="button-like" type="button"
-                                                    onclick="wishlist('{{ product.id }}', 'add')"
-                                                    id='btn_wishlist'>
-                                                like
-                                            </button>
-                                        {% endif %}
-                                        {% if is_sub_edit_price %}
-                                            <button class="button-buy" style="width: 120px;" type="button"
-                                                    onclick="subeditprice('{{ product.id }}', 'del')"
-                                                    id='btn_subeditprice'>
-                                                Unfollow price
-                                            </button>
-                                        {% else %}
-                                            <button class="button-buy" style="width: 120px;" type="button"
-                                                    onclick="subeditprice('{{ product.id }}', 'add')"
-                                                    id='btn_subeditprice'>
-                                                Follow price
-                                            </button>
-                                        {% endif %}
-
-                                    {% endif %}
-                                </div>
+                                {% if request|is_product_compare:product.id %}
+                                    <button class="button-buy" id="btn_compare" name="action"
+                                            value="remove_from_compare" style="max-width: 100px;">
+                                        <span>Compare✔</span></button>
+                                {% else %}
+                                    <button class="button-buy" id="btn_compare" name="action" value="add_to_compare"
+                                            style="max-width: 100px;">
+                                        Compare
+                                    </button>
+                                {% endif %}
                             </form>
+                            <button class="button-buy" type='submit' onclick="add2basket('{{ product.id }}')"
+                                    id="btn_add2basket">Buy
+                            </button>
+                            <div>
+                                {% if request.user.is_authenticated %}
+                                    {% if is_wishlist %}
+                                        <button style="display: table-row" class="button-unlike" type="button"
+                                                onclick="wishlist('{{ product.id }}', 'del')"
+                                                id='btn_wishlist'>
+                                            unlike
+                                        </button>
+                                        <button style="display: none" class="button-like" type="button"
+                                                onclick="wishlist('{{ product.id }}', 'add')"
+                                                id='btn_wishlist'>
+                                            like
+                                        </button>
+                                    {% else %}
+                                        <button style="display: none" class="button-unlike" type="button"
+                                                onclick="wishlist('{{ product.id }}', 'del')"
+                                                id='btn_wishlist'>
+                                            unlike
+                                        </button>
+                                        <button style="display: table-row" class="button-like" type="button"
+                                                onclick="wishlist('{{ product.id }}', 'add')"
+                                                id='btn_wishlist'>
+                                            like
+                                        </button>
+                                    {% endif %}
+                                    {% if is_sub_edit_price %}
+                                        <button class="button-buy" style="width: 120px;" type="button"
+                                                onclick="subeditprice('{{ product.id }}', 'del')"
+                                                id='btn_subeditprice'>
+                                            Unfollow price
+                                        </button>
+                                    {% else %}
+                                        <button class="button-buy" style="width: 120px;" type="button"
+                                                onclick="subeditprice('{{ product.id }}', 'add')"
+                                                id='btn_subeditprice'>
+                                            Follow price
+                                        </button>
+                                    {% endif %}
+
+                                {% endif %}
+                            </div>
+
                         </div>
                     </div>
 
@@ -196,15 +207,28 @@
                     <button name="action" value="addcom" onclick="add_comment()">Добавить</button>
                 </div>
             {% endif %}
-            <div class="comments_all">
+            <div class="comments_all" id="id_comments_all">
                 {% for comm in product.comments.all %}
-                    <div class="comment_card">
+                    <div class="comment_card" id="comment_{{ comm.id }}">
+                        <div>
+                            <button style="float: right;" onclick="del_comment({{ comm.id }})">delete</button>
+                        </div>
                         <div class="comment_user">{{ comm.user.username }}</div>
                         <div class="comment_text">{{ comm.text }}</div>
-                        <div id="likes_{{ comm.id }}">likes: {{ comm.likes }}</div>
+                        <div><span>likes: </span><span id="likes_{{ comm.id }}">{{ comm.likes }}</span></div>
                         {% if user.is_authenticated %}
-                            <button type="submit" onclick="like_comm({{ comm.id }})">like</button>
+                            <button onclick="like_comm({{ comm.id }})">like</button>
+                            <hr>
+                            <textarea style="" class="textarea-reply" id="textarea_reply_{{ comm.id }}"
+                                      placeholder="reply.."></textarea>
+                            <button onclick="reply_comm({{ comm.id }})">reply</button>
                         {% endif %}
+                        <div class="replies-block" id="rep_block_{{ comm.id }}">
+                            {% for replie in comm.replies.all %}
+                                <div class="reply" id="replie_{{ replie.id }}">
+                                    <b>{{ replie.user.username }}</b>:{{ replie.text }}</div>
+                            {% endfor %}
+                        </div>
                     </div>
                 {% endfor %}
             </div>
@@ -215,6 +239,78 @@
     </script>
 
     <script>
+
+        function del_comment(comm_id) {
+            $.ajax({
+                type: 'POST', url: '{% url "del_comment" %}',
+                data: {'csrfmiddlewaretoken': scrf_token, 'comm_id': comm_id},
+                dataType: 'json',
+                cache: false,
+                success: function (data) {
+                    if (data.success) {
+                        var comm_card = "#comment_" + comm_id;
+                        $(comm_card).remove();
+                    } else {
+
+                    }
+                }
+            });
+        }
+
+        function add_to_compare() {
+            $.ajax({
+                type: 'POST', url: '{% url "add_to_compare" %}',
+                data: {'csrfmiddlewaretoken': scrf_token, 'pid': {{ product.id }}},
+                dataType: 'json',
+                cache: false,
+                success: function (data) {
+                    if (data.success) {
+                        $('#btn_compare').attr('onclick', 'del_from_compare()');
+                        $('#btn_compare').text('Compare ✓');
+                    } else {
+
+                    }
+                }
+            });
+        }
+
+        function del_from_compare() {
+            $.ajax({
+                type: 'POST', url: '{% url "add_to_compare" %}',
+                data: {'csrfmiddlewaretoken': scrf_token, 'pid': {{ product.id }}, 'cid': {{ product.cid.get.id }}},
+                dataType: 'json',
+                cache: false,
+                success: function (data) {
+                    if (data.success) {
+                        $('#btn_compare').attr('onclick', 'add_to_compare()');
+                        $('#btn_compare').text('Compare');
+                    } else {
+
+                    }
+                }
+            });
+        }
+
+        function reply_comm(comm_id) {
+            reply_textarea_id = '#textarea_reply_' + comm_id;
+            reply_block_id = '#rep_block_' + comm_id;
+            var reply_text = $(reply_textarea_id).val();
+            $.ajax({
+                type: 'POST', url: '{% url "reply_comment" %}',
+                data: {'csrfmiddlewaretoken': scrf_token, 'comm_id': comm_id, 'text': reply_text},
+                dataType: 'json',
+                cache: false,
+                success: function (data) {
+
+                    if (data.success) {
+                        var $reply = $('<div id="replie_' + data.reply_id + '"><b>{{ request.user.username }}</b>:' + data.reply_text + '</div>');
+                        $reply.appendTo(reply_block_id);
+                    } else {
+
+                    }
+                }
+            });
+        }
 
         function like_comm(comm_id) {
             $.ajax({
@@ -285,8 +381,18 @@
                 cache: false,
                 success: function (data) {
                     if (data.success) {
-                        var $comment = $('<div class="comment_card"><div class="comment_user">{{ request.user.username }}</div> <div class="comment_text">' + data.comment_text + '</div><button type="submit" onclick="like_comm(' + data.comm_id + ')">like</button> <div id="likes_' + data.comm_id + '">0</div></div>');
+                        var $comment = $('<div class="comment_card"><div class="comment_user">{{ request.user.username }}</div> \
+                            <div class="comment_text">' + data.comment_text + ' \ ' +
+                            '</div><div id="likes_' + data.comm_id + '">0</div> \ ' +
+                            '<button type="submit" onclick="like_comm(' + data.comm_id + ')">like</button> \ ' +
+                            '<hr> <textarea style="" class="textarea-reply" id="textarea_reply_' + data.comm_id + '"placeholder="reply.."> \ ' +
+                            '</textarea> <button onclick="reply_comm(' + data.comm_id + ')">reply</button> \ ' +
+                            '<div class="replies-block" id="rep_block_' + data.comm_id + '"></div></div>');
+                        {#var block_comments = document.getElementById('id_comments_all')#}
+                        {#var first = block_comments.firstChild#}
+                        {#wall.insertBefore($comment, first)#}
                         $comment.appendTo('.comments_all');
+
                     } else {
                         {#var $item = $('<span class="msg">' + data.error + '</span>');#}
                         {#$item.appendTo('.form_add_basket').delay(4000).slideUp(500, function () {#}

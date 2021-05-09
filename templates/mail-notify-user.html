@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+<div style="border-radius: 10px;width: 600px;margin: auto;min-height: 400px;border: solid;padding: 10px;">
+    <div style="text-align: center;"><span style="font-size: 20px"><b>Hi {{ user }}! {{ user_2 }} responded to your comment</b></span></div>
+    <div style="width: 480px;margin: auto;border: 1px solid darkgray;border-radius: 10px;padding: 10px;">
+    <span>
+        <span>Ur comment: "{{ comm_text }}" on product <a href="{{ product_url }}">{{ product_title }}</a></span><br>
+        <span>User <b>{{ user_2 }}</b> responded: "{{ text_reply }}"</span>
+    </span>
+    </div>
+</div>
+</body>
+</html>

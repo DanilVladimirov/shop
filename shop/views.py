@@ -53,3 +53,7 @@ def login_contact(request):
         user.save()
         login(request, user)
         return redirect('start_page')
+
+
+def test_mail(request):
+    return render(request,'mail-notify-user.html')

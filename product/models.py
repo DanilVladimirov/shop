@@ -1,7 +1,8 @@
+import random
+
 import requests
 from django.db import models, utils
 from django.dispatch import receiver
-
 from accounts.models import CustomUser
 from django.db.models.signals import post_delete, post_save, m2m_changed
 from django.urls import reverse
@@ -10,6 +11,13 @@ import os
 from django.utils.crypto import get_random_string
 from accounts.subscribe import subscribe_edit_price, subscribe_active_product, subscribe_get_file_in_order
 from django.contrib import admin
+
+
+def file_path(instance, filename):
+    basefilename, file_extension = os.path.splitext(filename)
+    chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890'
+    randomstr = ''.join((random.choice(chars)) for x in range(10))
+    return f'{basefilename}_{randomstr}{file_extension}'
 
 
 class PriceMatrix(models.Model):
@@ -70,7 +78,7 @@ class CommentsProduct(models.Model):
 
 
 class PresentationImages(models.Model):
-    image = models.ImageField(upload_to='presentations', default=None, null=True, blank=True)
+    image = models.ImageField(upload_to=file_path, default=None, null=True, blank=True)
 
 
 class Product(models.Model):
@@ -88,7 +96,7 @@ class Product(models.Model):
     cid = models.ManyToManyField('Categories', related_name='category')
     date_add = models.DateTimeField(auto_now_add=True)
     date_edit = models.DateTimeField(auto_now=True)
-    photo = models.FileField(default=None, null=True, blank=True)
+    photo = models.FileField(default='img.jpeg', null=True, blank=True, upload_to=file_path)
     attrs = models.ManyToManyField(ProductAttrs)
     comments = models.ManyToManyField(CommentsProduct, blank=True)
     is_recommend = models.BooleanField(default=False, verbose_name='Рекомендовать')
@@ -178,6 +186,7 @@ class Categories(models.Model):
     state = models.BooleanField(default=True)
     attributes = models.ManyToManyField(Attributes)
     key_words = models.ManyToManyField(KeyWords)
+    photo = models.ImageField(default='category_img.jpeg', null=True, blank=True, upload_to=file_path)
 
     def __str__(self):
         return self.name
@@ -187,6 +196,7 @@ class Brand(models.Model):
     name = models.CharField(max_length=100, default='')
     description = models.TextField(default='')
     categories = models.ManyToManyField(Categories)
+    photo = models.ImageField(default='default-logo.img', null=True, blank=True, upload_to=file_path)
 
     def __str__(self):
         return f'brand: {self.name}'
@@ -199,7 +209,7 @@ class Promotions(models.Model):
     discount_percentage = models.FloatField(default=0.0)
     date_start = models.DateTimeField()
     date_end = models.DateTimeField()
-    image = models.ImageField(default='promotion_img.jpeg', blank=True)
+    image = models.ImageField(default='promotion_img.jpeg', blank=True, upload_to=file_path)
 
     def __str__(self):
         return self.title

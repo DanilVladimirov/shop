@@ -50,6 +50,7 @@
     width: 80px;
     outline: none;
     transition: 0.3s;
+    margin-right: 4px;
 }
 
 .button-buy:hover {
@@ -204,4 +205,16 @@
     height: 135px;
     object-fit: cover;
     border-radius: 10px;
+}
+
+.textarea-reply {
+    max-width: 220px;
+}
+
+.replies-block {
+
+}
+
+.reply {
+    word-wrap: break-word;
 }

@@ -1,4 +1,6 @@
 from django.shortcuts import render, HttpResponseRedirect, get_object_or_404, redirect, HttpResponse
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 
 from product.forms import ProductImage, PresentationImageForm
 from product.models import *
@@ -20,6 +22,7 @@ from product import parser_rozetka
 import re
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.models import Group
+from product.tasks import send_email
 
 
 # for compare strings
@@ -117,6 +120,7 @@ def product_page(request, pid):
     product = Product.objects.get(id=pid)
     context = {'product': product}
     action = request.POST.get('action')
+    print(request)
     if request.POST and action == 'add_to_compare':
         compare_list = request.session.get('compare', {})
         request.session['compare'] = compare_list
@@ -130,7 +134,16 @@ def product_page(request, pid):
         request.session.modified = True
         compare_list = request.session.get('compare', {})
         print(compare_list)
-
+    if request.POST and action == 'remove_from_compare':
+        compare_list = request.session.get('compare', {})
+        product_id = pid
+        cid = product.cid.get().name
+        list_ = compare_list[cid]
+        list_.remove(int(product_id))
+        if len(list_) == 0:
+            del request.session['compare'][cid]
+        else:
+            request.session['compare'][cid] = list_
     viewed_products = request.session.get('viewed_products', {})
     product = get_object_or_404(Product, pk=pid)
     viewed_products.pop(str(product.id), None)
@@ -232,6 +245,40 @@ def compare_page(request, cid):
     request.session.modified = True
     context.update({'products': products})
     return render(request, 'compare-page.html', context)
+
+
+def remove_from_compare(request):
+    if request.POST:
+        compare_list = request.session.get('compare', {})
+        product_id = request.POST.get('product_id')
+        cid = request.POST.get('cid')
+        list_ = compare_list[cid]
+        list_.remove(int(product_id))
+        if len(list_) == 0:
+            del request.session['compare'][cid]
+        else:
+            request.session['compare'][cid] = list_
+        data_response = {'success': True}
+
+        return HttpResponse(json.dumps(data_response), content_type='application/json')
+
+
+def add_to_compare(request):
+    if request.POST:
+        product = Product.objects.get(id=request.POST.get('pid'))
+        compare_list = request.session.get('compare', {})
+        request.session['compare'] = compare_list
+        if product.cid.get().name in compare_list:
+            if product.id not in compare_list.get(product.cid.get().name):
+                temp_values = compare_list[product.cid.get().name]
+                temp_values.append(product.id)
+                compare_list[product.cid.get().name] = temp_values
+        else:
+            compare_list[product.cid.get().name] = [product.id]
+        request.session.modified = True
+        data_response = {'success': True}
+
+        return HttpResponse(json.dumps(data_response), content_type='application/json')
 
 
 def del_category(request):
@@ -437,6 +484,36 @@ def like_comment(request):
         return HttpResponse(json.dumps(data_response), content_type='application/json')
 
 
+def reply_comment(request):
+    if request.POST:
+        reply_text = request.POST.get('text')
+        comment = CommentsProduct.objects.get(id=request.POST.get('comm_id'))
+        user = CustomUser.objects.get(id=request.user.id)
+        new_reply = CommentsReplies.objects.create(user=user,
+                                                   text=reply_text)
+        new_reply.save()
+        comment.replies.add(new_reply)
+        # send_email
+        if not user.id == comment.user.id:
+            html_content = render_to_string('mail-notify-user.html', {'user': comment.user.username,
+                                                                      'user_2': user.username,
+                                                                      'comm_text': comment.text,
+                                                                      'product_title': comment.product_set.get().title,
+                                                                      'text_reply': new_reply.text,
+                                                                      'product_url': request.build_absolute_uri(reverse('product_page',kwargs={'pid': comment.product_set.get().id}))})
+            text_content = strip_tags(html_content)
+            list_users = [comment.user.email]
+
+            send_email.apply_async(args=(f'{user.username} responded to your comment',
+                                         text_content,
+                                         list_users,
+                                         html_content))
+        data_response = {'success': True,
+                         'reply_id': new_reply.id,
+                         'reply_text': reply_text}
+        return HttpResponse(json.dumps(data_response), content_type='application/json')
+
+
 def add_comment(request):
     if request.POST:
         comment = request.POST.get('comment')
@@ -446,8 +523,23 @@ def add_comment(request):
                                                      text=comment)
         new_comment.save()
         product.comments.add(new_comment)
-        data_response = {'success': True, 'comment_text': comment, 'comm_id': new_comment.id}
+        data_response = {'success': True,
+                         'comment_text': comment,
+                         'comm_id': new_comment.id}
 
+        return HttpResponse(json.dumps(data_response), content_type='application/json')
+
+
+def del_comment(request):
+    if request.POST:
+        group = Group.objects.get(name='Moder')
+        if group in request.user.groups.all():
+            comm_id = request.POST.get('comm_id')
+            comment = CommentsProduct.objects.get(id=comm_id)
+            comment.delete()
+            data_response = {'success': True}
+        else:
+            data_response = {'success': False}
         return HttpResponse(json.dumps(data_response), content_type='application/json')
 
 

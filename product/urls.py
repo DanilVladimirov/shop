@@ -33,5 +33,9 @@ urlpatterns = [
     path('add_comment/', add_comment, name='add_comment'),
     path('add_presentation_image/', add_presentation_image, name='add_presentation_image'),
     path('del_presentation_image/', del_presentation_image, name='del_presentation_image'),
-    path('like_comment/', like_comment, name='like_comment')
+    path('like_comment/', like_comment, name='like_comment'),
+    path('reply_comment/', reply_comment, name='reply_comment'),
+    path('add_to_compare/', add_to_compare, name='add_to_compare'),
+    path('del_from_compare/', remove_from_compare, name='del_from_compare'),
+    path('del_comment/', del_comment, name='del_comment')
 ]

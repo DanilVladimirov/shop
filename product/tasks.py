@@ -5,9 +5,11 @@ from product.models import (Promotions,
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
-
-SHOP_MAIL = 'aktezorshop@gmail.com'
+SHOP_MAIL = os.environ.get('EMAIL_HOST_USER')
 
 
 @app.task
