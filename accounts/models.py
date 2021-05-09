@@ -18,18 +18,17 @@ class CustomUser(AbstractUser):
                                 validators=[UnicodeUsernameValidator()])
     email = models.EmailField(_('email address'), unique=True)
     balance = models.FloatField(default=0)
-    id_tg = models.IntegerField(blank = True, null=True)
+    id_tg = models.IntegerField(blank=True, null=True)
     brand = models.ForeignKey('product.Brand', on_delete=models.CASCADE,
                               blank=True, null=True)
     subscription_email = models.BooleanField(default=False)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
-
+    liked_comments = models.ManyToManyField('product.CommentsProduct')
     objects = CustomUserManager()
 
     def __str__(self):
         return self.email
-
 
     @classmethod
     def is_user_email(self, email):
@@ -47,5 +46,3 @@ class Subscribe(models.Model):
     is_create_order = models.BooleanField(default=False, verbose_name='Офорлмение заказа')
     is_get_digit_file = models.BooleanField(default=False, verbose_name='Получать цифровые файлы с заказа')
     is_authorization = models.BooleanField(default=False, verbose_name='Успешной авторизации в аккаунт')
-
-

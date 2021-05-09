@@ -13,7 +13,6 @@ from accounts import subscribe
 import datetime
 from dotenv import load_dotenv
 from product import convert_html
-
 load_dotenv()
 import os
 from django.db.models import Sum
@@ -419,6 +418,25 @@ def select_curr(request):
         return HttpResponseRedirect(link)
 
 
+def like_comment(request):
+    if request.POST:
+        comm_id = request.POST.get('comm_id')
+        comment = CommentsProduct.objects.get(id=comm_id)
+        user = CustomUser.objects.get(id=request.user.id)
+        if not user.liked_comments.filter(id=comm_id).exists():
+            user.liked_comments.add(comment)
+            comment.likes = comment.likes + 1
+            comment.save()
+            data_response = {'success': 'like'}
+        else:
+            user.liked_comments.remove(comment)
+            comment.likes = comment.likes - 1
+            comment.save()
+            data_response = {'success': 'unlike'}
+
+        return HttpResponse(json.dumps(data_response), content_type='application/json')
+
+
 def add_comment(request):
     if request.POST:
         comment = request.POST.get('comment')
@@ -428,7 +446,7 @@ def add_comment(request):
                                                      text=comment)
         new_comment.save()
         product.comments.add(new_comment)
-        data_response = {'success': True, 'comment_text': comment}
+        data_response = {'success': True, 'comment_text': comment, 'comm_id': new_comment.id}
 
         return HttpResponse(json.dumps(data_response), content_type='application/json')
 

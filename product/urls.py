@@ -32,5 +32,6 @@ urlpatterns = [
     path('shop/update_warehouses_np/', update_warehouses_np, name = 'update_warehouses_np'),
     path('add_comment/', add_comment, name='add_comment'),
     path('add_presentation_image/', add_presentation_image, name='add_presentation_image'),
-    path('del_presentation_image/', del_presentation_image, name='del_presentation_image')
+    path('del_presentation_image/', del_presentation_image, name='del_presentation_image'),
+    path('like_comment/', like_comment, name='like_comment')
 ]

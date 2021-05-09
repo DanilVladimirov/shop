@@ -89,8 +89,8 @@ def buy_together(data):
 
 def select_rating_product(id, select_rating):
     html_result = ''
-    html_result+=f'<select name="rating_product" id="rating_product">'
-    html_result+=f'<option value="0">select</option>'
+    html_result += f'<select name="rating_product" id="rating_product">'
+    html_result += f'<option value="0">select</option>'
     for i in range(1, 11):
         select = 'selected' if select_rating == i else ''
         html_result += f'<option value={i} {select}>{i}</option>'
@@ -106,10 +106,10 @@ def delivery_np(data):
         html_result += f'<option value="{i}">{i}</option>'
     html_result += '</select>'
     if data.get('type') == 'region_novaposhta':
-        html_result+=f'<button type=\'button\' class = \'{data.get("type")}_delivery\' onclick="select_delivery(\'region\', \'novaposhta\')">Выбрать</button></span>'
+        html_result += f'<button type=\'button\' class = \'{data.get("type")}_delivery\' onclick="select_delivery(\'region\', \'novaposhta\')">Выбрать</button></span>'
     if data.get('type') == 'city_novaposhta':
-        html_result+=f'<button type=\'button\' class = \'{data.get("type")}_delivery\' onclick="select_delivery(\'city\', \'novaposhta\')">Выбрать</button></span>'
+        html_result += f'<button type=\'button\' class = \'{data.get("type")}_delivery\' onclick="select_delivery(\'city\', \'novaposhta\')">Выбрать</button></span>'
     if data.get('type') == 'warehouses_novaposhta':
-        html_result+=f'<button type=\'button\' class = \'{data.get("type")}_delivery\' onclick="select_delivery(\'warehouses\', \'novaposhta\', \'{data.get("ref")}\')">Выбрать</button></span>'
+        html_result += f'<button type=\'button\' class = \'{data.get("type")}_delivery\' onclick="select_delivery(\'warehouses\', \'novaposhta\', \'{data.get("ref")}\')">Выбрать</button></span>'
 
     return html_result

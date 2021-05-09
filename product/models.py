@@ -44,12 +44,26 @@ class ProductAttrs(models.Model):
         return f'value: {self.value}'
 
 
+class CommentsReplies(models.Model):
+    user = models.ForeignKey(CustomUser,
+                             on_delete=models.SET_NULL,
+                             null=True,
+                             default=None)
+    text = models.TextField(default='text')
+
+    def __str__(self):
+        return f'text:{self.text}'
+
+
 class CommentsProduct(models.Model):
     user = models.ForeignKey(CustomUser,
                              on_delete=models.SET_NULL,
                              null=True,
                              default=None)
-    text = models.TextField(default='Текст')
+    text = models.TextField(default='text')
+    likes = models.IntegerField(default=0)
+    diss_likes = models.IntegerField(default=0)
+    replies = models.ManyToManyField(CommentsReplies, blank=True)
 
     def __str__(self):
         return f'text:{self.text}'

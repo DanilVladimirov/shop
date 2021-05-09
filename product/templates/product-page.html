@@ -16,7 +16,7 @@
     </div>
     <div id="Info" class="tabcontent">
         <div class="product_tab" style="display: block">
-            <div style="display: flex;justify-content: center;width: 2000px;">
+            <div style="display: flex;justify-content: center;">
                 <div class="product_image_side">
                     {% if product.photo %}
                         <img class="product_img" src="{{ product.photo.url }}">
@@ -27,37 +27,36 @@
                 <div>
                     <div class="buy-information">
                         <div>
-                            <div>
-                                {% if product.stock == 0 %}
-                                    <span style="color: darkgray;font-size: 30px;">out of stock :(</span><br>
-                                    {% if is_sub_active_product %}
-                                        <button class="button-available" type="button"
-                                                onclick="subactivateproduct('{{ product.id }}', 'del')"
-                                                id='btn_subactivateproduct'>don't inform about the availability
-                                        </button>
-                                    {% else %}
-                                        <button class="button-available" type="button"
-                                                onclick="subactivateproduct('{{ product.id }}', 'add')"
-                                                id='btn_subactivateproduct'>inform about the availability
-                                        </button>
-                                    {% endif %}
+                            {% if product.stock == 0 %}
+                                <span style="color: darkgray;font-size: 30px;">out of stock :(</span><br>
+                                {% if is_sub_active_product %}
+                                    <button class="button-available" type="button"
+                                            onclick="subactivateproduct('{{ product.id }}', 'del')"
+                                            id='btn_subactivateproduct'>don't inform about the availability
+                                    </button>
                                 {% else %}
-                                    {% if product.old_price != 0 %}
-                                        <span>old price: {{ product.old_price }}</span><br>
-                                        <span class="product_price red">{{ product.price|mul:rate_select_currency }} {{ disp_select_currency }}</span>
-                                        <br>
-                                    {% else %}
-                                        <span class="product_price">{{ product.price|mul:rate_select_currency }} {{ disp_select_currency }}</span>
-                                        <br>
-                                    {% endif %}
+                                    <button class="button-available" type="button"
+                                            onclick="subactivateproduct('{{ product.id }}', 'add')"
+                                            id='btn_subactivateproduct'>inform about the availability
+                                    </button>
                                 {% endif %}
-                                <span class="product_brand">
+                            {% else %}
+                                {% if product.old_price != 0 %}
+                                    <span>old price: {{ product.old_price }}</span><br>
+                                    <span class="product_price red">{{ product.price|mul:rate_select_currency }} {{ disp_select_currency }}</span>
+                                    <br>
+                                {% else %}
+                                    <span class="product_price">{{ product.price|mul:rate_select_currency }} {{ disp_select_currency }}</span>
+                                    <br>
+                                {% endif %}
+                            {% endif %}
+                            <span class="product_brand">
                                 Brand:
                                 <a href="{% url 'brand_page' product.brand_id %}">
                                     {{ product.brand.name }}
                                 </a>
                             </span>
-                            </div>
+
                         </div>
                         <div class="button-buy-box">
                             <form action="" method="post" style="width: 200px;">
@@ -106,11 +105,12 @@
                                             </button>
                                         {% endif %}
 
-                                        </div>
                                     {% endif %}
+                                </div>
                             </form>
                         </div>
                     </div>
+
                     <div style="background-color: #f5f5f5;padding: 30px;border-radius: 10px;width: 500px;display: flex;margin-top:10px;align-items: center;">
                         {% if rating_product %}
                             <b><span id='rating'>Raiting: {{ rating_product }}</span></b>
@@ -127,8 +127,21 @@
                         {% endif %}
                     </div>
                 </div>
+
             </div>
         </div>
+        {% if viewed_products %}
+            <h2>Просмотренные товары:</h2>
+            <div class="card-group" style="display: flex;">
+                {{ viewed_products|safe }}
+            </div>
+        {% endif %}
+        {% if recommend_pr %}
+            <br><br><h2>Похожие товары:</h2>
+            <div class="card-group" style="display: flex;">
+                {{ recommend_pr|safe }}
+            </div>
+        {% endif %}
         {% if product.presentation_images %}
             <div id="presentation_cards" style="margin-top: 20px;">
                 {% for image in product.presentation_images.all %}
@@ -157,18 +170,7 @@
         {% endif %}
         {% if product.file_digit %}{{ product.file_digit.url }}{% endif %}
 
-        {% if viewed_products %}
-            <h2>Просмотренные товары:</h2>
-            <div class="card-group" style="display: flex;">
-                {{ viewed_products|safe }}
-            </div>
-        {% endif %}
-        {% if recommend_pr %}
-            <br><br><h2>Похожие товары:</h2>
-            <div class="card-group" style="display: flex;">
-                {{ recommend_pr|safe }}
-            </div>
-        {% endif %}
+
         {% if buy_together %}
             <br><br><h2>Покупают вместе</h2>
             <div class="card-group" style="display: flex;">
@@ -199,6 +201,10 @@
                     <div class="comment_card">
                         <div class="comment_user">{{ comm.user.username }}</div>
                         <div class="comment_text">{{ comm.text }}</div>
+                        <div id="likes_{{ comm.id }}">likes: {{ comm.likes }}</div>
+                        {% if user.is_authenticated %}
+                            <button type="submit" onclick="like_comm({{ comm.id }})">like</button>
+                        {% endif %}
                     </div>
                 {% endfor %}
             </div>
@@ -209,6 +215,26 @@
     </script>
 
     <script>
+
+        function like_comm(comm_id) {
+            $.ajax({
+                type: 'POST', url: '{% url "like_comment" %}',
+                data: {'csrfmiddlewaretoken': scrf_token, 'comm_id': comm_id},
+                dataType: 'json',
+                cache: false,
+                success: function (data) {
+                    var likes_id = "likes_" + comm_id;
+                    var likes = document.getElementById(likes_id);
+                    console.log(document.getElementById(likes_id));
+                    if (data.success === 'like') {
+                        likes.innerHTML = parseInt(likes.textContent) + 1;
+                    } else if (data.success === 'unlike') {
+                        likes.innerHTML = parseInt(likes.textContent) - 1;
+                    }
+                }
+            });
+        }
+
         function del_img(img_id) {
             $.ajax({
                 type: 'POST', url: '{% url "del_presentation_image" %}',
@@ -259,7 +285,7 @@
                 cache: false,
                 success: function (data) {
                     if (data.success) {
-                        var $comment = $('<div class="comment_card"><div class="comment_user">{{ request.user.username }}</div> <div class="comment_text">' + data.comment_text + '</div></div>');
+                        var $comment = $('<div class="comment_card"><div class="comment_user">{{ request.user.username }}</div> <div class="comment_text">' + data.comment_text + '</div><button type="submit" onclick="like_comm(' + data.comm_id + ')">like</button> <div id="likes_' + data.comm_id + '">0</div></div>');
                         $comment.appendTo('.comments_all');
                     } else {
                         {#var $item = $('<span class="msg">' + data.error + '</span>');#}
