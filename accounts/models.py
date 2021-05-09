@@ -24,7 +24,7 @@ class CustomUser(AbstractUser):
     subscription_email = models.BooleanField(default=False)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
-    liked_comments = models.ManyToManyField('product.CommentsProduct')
+    liked_comments = models.ManyToManyField('product.CommentsProduct', blank=True)
     objects = CustomUserManager()
 
     def __str__(self):
