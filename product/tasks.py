@@ -6,6 +6,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 import os
+from product import services, parser_rozetka
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -75,3 +76,23 @@ def send_email(*args, **kwargs):
     email.attach_alternative(args[3], "text/html")
     email.send()
     return f'already send mails to {args[2]}'
+
+
+@app.task
+def edit_price_in_category(lst_cats, type_edit, value_edit, is_edit_old_price):
+    services.ProductServices.edit_price_products(
+            lst_cats=lst_cats,
+            type_edit = type_edit, 
+            value_edit = value_edit, 
+            is_edit_old_price = is_edit_old_price
+    )
+
+
+@app.task
+def import_from_gsheets(link):
+    services.ImportSheet.import_from_gsheets(link)
+
+
+@app.task
+def parser_rozetka(id_cat):
+    parser_rozetka.get_all_ids_goods(id_cat)
