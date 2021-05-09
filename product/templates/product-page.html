@@ -210,9 +210,12 @@
             <div class="comments_all" id="id_comments_all">
                 {% for comm in product.comments.all %}
                     <div class="comment_card" id="comment_{{ comm.id }}">
-                        <div>
-                            <button style="float: right;" onclick="del_comment({{ comm.id }})">delete</button>
-                        </div>
+                        {% load shop_tags %}
+                        {% if request.user|has_group:"Moder" %}
+                            <div>
+                                <button style="float: right;" onclick="del_comment({{ comm.id }})">delete</button>
+                            </div>
+                        {% endif %}
                         <div class="comment_user">{{ comm.user.username }}</div>
                         <div class="comment_text">{{ comm.text }}</div>
                         <div><span>likes: </span><span id="likes_{{ comm.id }}">{{ comm.likes }}</span></div>

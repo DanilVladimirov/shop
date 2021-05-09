@@ -137,7 +137,6 @@
 .product_img {
     object-fit: cover;
     width: 300px;
-    height: 400px;
     border-radius: 10px;
 }
 
