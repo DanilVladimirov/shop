@@ -656,6 +656,7 @@ def checkout_page(request):
                   context={'products': basket, 'total_cost': total_cost, 'all_delivery': delivery})
 
 
+
 def all_invoices(request):
     """ страница со всеми заказами """
     template = 'product/all_invoices.html'
