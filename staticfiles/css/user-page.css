@@ -1,5 +1,4 @@
-.btn_signout {
-    background-color: #f05146;
+.btn {
     border: none;
     border-radius: 5px;
     width: 100px;
@@ -9,11 +8,55 @@
     transition: all 0.3s ease;
 }
 
-.btn_signout:hover {
-    color: #f05146;
-    background-color: white;
-    border: solid #f05146;
+.btn:hover {
+    background-color: #e9e9e9;
     transition: all 0.3s ease;
+}
+
+.sign_out {
+    background-color: #f05146;
+    float: right;
+}
+
+.sign_out:hover {
+    color: #f05146;
+    border: solid #f05146;
+}
+
+.my_products {
+    background-color: #2196F3;
+    width: 130px;
+}
+
+.my_products:hover {
+    color: #2196F3;
+    border: solid #2196F3;
+}
+
+.change {
+    background-color: #2196F3;
+    font-size: 14px;
+    width: 70px;
+    height: 30px;
+    margin: auto;
+}
+
+.change:hover {
+    color: #2196F3;
+    border: solid #2196F3;
+}
+
+.user_change_form {
+    display: grid;
+    width: 200px;
+    margin-bottom: 20px;
+}
+
+.user_change_form input {
+    height: 30px;
+    border-radius: 10px;
+    border: none;
+    margin-bottom: 10px;
 }
 
 .control_panel_div {

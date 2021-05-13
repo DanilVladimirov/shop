@@ -1,0 +1,24 @@
+.button_del {
+    background-color: #f54e42;
+    border: none;
+    width: 30px;
+    height: 20px;
+    border-radius: 10px;
+    color: white;
+}
+.card_checkout {
+    width: 70%;
+    margin: auto;
+    border: 2px solid;
+    border-radius: 10px;
+    padding: 10px;
+    margin-top: 30px;
+}
+.card_table {
+    width: 100%;
+    margin: auto;
+    text-align: left;
+    border: 2px solid;
+    border-radius: 10px;
+    padding: 10px;
+}

@@ -6,30 +6,39 @@
     <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
     <script src="https://code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-    <script>var scrf_token = $('{%csrf_token%}').val(); </script>
+    <script>var scrf_token = $('{% csrf_token %}').val(); </script>
     {% block head %}
     {% endblock %}
 </head>
 <body>
 
 <div class="topnav">
-    <a class="active left_side" href="{% url 'start_page' %}"><img src="/static/logo_shop.png"><span>shop</span></a>
-    <a class="active right_side" {% if request.user.is_authenticated %} href="{% url 'user_page' %}" {% else %}
+    <a style="background-color: #2196F3;border-radius: 10px;margin: 4.5px;" class="active left_side"
+       href="{% url 'start_page' %}"><img src="/static/logo_shop.png"><span>Aktezor</span></a>
+    <a style="margin-top: 5px;" class="active right_side" {% if request.user.is_authenticated %}
+       href="{% url 'user_page' %}" {% else %}
        href="{% url 'login' %}" {% endif %}>
-        <img src="/static/userlogo.png">
+        <img style="width: 40px;" src="/static/userlogo.png">
         {% if not request.user.is_authenticated %}
             <span>sign in</span>
         {% endif %}
     </a>
-    <a class="active right_side" href="{% url 'checkout_page' %}"><img src="/static/cart.png"></a>
+    <a class="active right_side" style="margin-top: 5px;" href="{% url 'checkout_page' %}">
+        <img style="width: 40px;" src="/static/cart.png"></a>
+    <a class="active right_side" style="margin-top: 5px;" href="#compare">
+        <img style="width: 40px;" src="/static/compare_img.png"></a>
     <div class="search-container">
         <form action="{% url "search_products_page" %}">
-            <input id="id_search_query" type="text" placeholder="Search.." name="q">
-            <button class="button_search" type="submit"><img class="search-img" src="/static/search.png"></button>
+            <input id="id_search_query" style="border-radius: 10px;margin-top: 11px;" type="text" placeholder="Search.."
+                   name="q">
+            <button class="button_search" type="submit" style="border-radius: 10px;margin-top: 11px;"><img
+                    class="search-img" src="/static/search.png"></button>
         </form>
-        <button onclick="record()" class="button_voice"><img src="/static/mic.png"></button>
+        <button onclick="record()" style="border-radius: 10px;margin-top: 11px;" class="button_voice"><img
+                src="/static/mic.png"></button>
     </div>
-    <button class="button_compare" onclick="location.href='#compare'">compare</button>
+
+    {#    <button class="button_compare" onclick="location.href='#compare'">compare</button>#}
 
 </div>
 {% block body %}

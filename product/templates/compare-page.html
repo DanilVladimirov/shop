@@ -7,18 +7,20 @@
         {% if products %}
             {% for product in products %}
                 <div class="product_column">
-                    {{ product.title }}<br>
+                    <img style="width: 140px;" src="{{ product.photo.url }}"><br>
+                    <span style="color: gray;font-size: 20px"><b>{{ product.title }}</b></span><br>
+                    <hr>
                     {% for attr in product.attrs.all %}
                         <span class="attr_name">{{ attr.fkey_attr.name }}</span>:
                         <span class="attr_value">{{ attr.value }}</span> <br>
                     {% endfor %}
-                    <div style="display: flex;">
+                    <div style="display: flex;margin-top: 10px;">
                         <form action="" method="post">
                             {% csrf_token %}
                             <input type="hidden" name="product_id" value="{{ product.id }}">
-                            <button name="action" value="remove" style="margin-right: 4px;">Remove</button>
+                            <button class="btn remove" name="action" value="remove" style="margin-right: 4px;">Remove</button>
                         </form>
-                        <button onclick="add2basket('{{ product.id }}')" id="btn_add2basket">Buy</button>
+                        <button class="btn buy" onclick="add2basket('{{ product.id }}')" id="btn_add2basket">Buy</button>
                     </div>
                 </div>
             {% endfor %}

@@ -10,48 +10,52 @@
     {% else %}
         <span class="category_name">{{ category.name }}</span><br>
         <div class="content">
-            <div class="filters">
-                <form method="post" action="">
-                    {% csrf_token %}
-                    {{ products.brand.all }}
-                    {% for attr in category.attributes.all %}
-                        {{ attr.name }} <br>
-                        {% for val in attr.productattrs_set.values %}
-                            {% if val.value in checked %}
-                                <input type="checkbox" onchange="this.form.submit()" value="{{ val.value }}"
-                                       name="{{ attr.name }}" checked>
+            <div>
+                <div class="filters">
+                    <form method="post" action="">
+                        {% csrf_token %}
+                        {{ products.brand.all }}
+                        {% for attr in category.attributes.all %}
+                            {{ attr.name }} <br>
+                            {% for val in attr.productattrs_set.values %}
+                                {% if val.value in checked %}
+                                    <input type="checkbox" onchange="this.form.submit()" value="{{ val.value }}"
+                                           name="{{ attr.name }}" checked>
+                                {% else %}
+                                    <input type="checkbox" onchange="this.form.submit()" value="{{ val.value }}"
+                                           name="{{ attr.name }}">
+                                {% endif %}
+                                {{ val.value }}
+                                <br>
+                            {% endfor %}
+                            <hr>
+                        {% endfor %}
+                        {% for brand in brands %}
+                            {% if brand in brands_checked %}
+                                <input type="checkbox" onchange="this.form.submit()" value="{{ brand.id }}"
+                                       name="brands"
+                                       checked>
                             {% else %}
-                                <input type="checkbox" onchange="this.form.submit()" value="{{ val.value }}"
-                                       name="{{ attr.name }}">
+                                <input type="checkbox" onchange="this.form.submit()" value="{{ brand.id }}"
+                                       name="brands">
                             {% endif %}
-                            {{ val.value }}
+                            {{ brand.name }}
                             <br>
                         {% endfor %}
-                        <hr>
-                    {% endfor %}
-                    {% for brand in brands %}
-                        {% if brand in brands_checked %}
-                            <input type="checkbox" onchange="this.form.submit()" value="{{ brand.id }}" name="brands"
-                                   checked>
+                        Price
+                        {% if price_min %}
+                            <input type="number" min="0" value="{{ price_min }}" placeholder="from" name="price">
                         {% else %}
-                            <input type="checkbox" onchange="this.form.submit()" value="{{ brand.id }}" name="brands">
+                            <input type="number" min="0" value="0" placeholder="from" name="price">
                         {% endif %}
-                        {{ brand.name }}
-                        <br>
-                    {% endfor %}
-                    Price
-                    {% if price_min %}
-                        <input type="number" min="0" value="{{ price_min }}" placeholder="from" name="price">
-                    {% else %}
-                        <input type="number" min="0" value="0" placeholder="from" name="price">
-                    {% endif %}
-                    {% if price_max %}
-                        <input type="number" min="0" value="{{ price_max }}" placeholder="to" name="price">
-                    {% else %}
-                        <input type="number" min="0" value="0" placeholder="to" name="price">
-                    {% endif %}
-                    <button onclick="this.form.submit()">set</button>
-                </form>
+                        {% if price_max %}
+                            <input type="number" min="0" value="{{ price_max }}" placeholder="to" name="price">
+                        {% else %}
+                            <input type="number" min="0" value="0" placeholder="to" name="price">
+                        {% endif %}
+                        <button onclick="this.form.submit()">set</button>
+                    </form>
+                </div>
             </div>
             <div class="products">
                 <div style="display: flex;flex-wrap: wrap;">

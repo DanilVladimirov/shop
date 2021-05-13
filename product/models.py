@@ -152,7 +152,6 @@ class Product(models.Model):
         elif type_sub == 'active_product':
             acc_tasks.send_activate_product.delay(lst, self.title, self.price, items)
 
-
     def product_rating(self):
         rating = self.rating_product.values('value_rating').aggregate(rating=models.Avg('value_rating'))
         return rating.get('rating')
@@ -368,31 +367,31 @@ class Promocode(models.Model):
 class Order(models.Model):
     # user =
     status_choices = [
-        ('new', 'Новый'),
-        ('processing', 'В обработке'),
-        ('paid', 'Оплачен'),
-        ('finished', 'Завершен'),
-        ('cancel', 'Отменен'),
+        ('new', 'New'),
+        ('processing', 'Processing'),
+        ('paid', 'Paid'),
+        ('finished', 'Finished'),
+        ('cancel', 'Canceled'),
     ]
     user = models.ForeignKey(CustomUser, on_delete=models.PROTECT, null=True, blank=True)
-    full_amount = models.FloatField(default=0, verbose_name='Полная стоимость товаров в у.е.')
-    total_amount = models.FloatField(default=0, verbose_name='Сумма к оплате в у.е.')
+    full_amount = models.FloatField(default=0, verbose_name='Full price of products in standard units')
+    total_amount = models.FloatField(default=0, verbose_name='Amount to pay in standard units')
     date_create = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(default='new', choices=status_choices, max_length=50, verbose_name='Статус заказа')
-    currency = models.ForeignKey(Currency, on_delete=models.PROTECT, verbose_name='Валюта')
-    rate_currency = models.FloatField(default=1, verbose_name='Курс валюты в момент заказа')
-    promo = models.ForeignKey(Promocode, on_delete=models.PROTECT, blank=True, null=True, verbose_name='Промокод')
+    status = models.CharField(default='new', choices=status_choices, max_length=50, verbose_name='Order status')
+    currency = models.ForeignKey(Currency, on_delete=models.PROTECT, verbose_name='Currency')
+    rate_currency = models.FloatField(default=1, verbose_name='Currency rate at the time of order')
+    promo = models.ForeignKey(Promocode, on_delete=models.PROTECT, blank=True, null=True, verbose_name='Promocode')
     delivery_method = models.ForeignKey(Delivery, null=True, blank=True, on_delete=models.PROTECT,
-                                        verbose_name='Способ доставки')
-    cost_of_delivery = models.FloatField(default=0, verbose_name='Стоимость доставки')
-    is_paid = models.BooleanField(default=False, verbose_name='Было ли списание средств.')
-    delivery_department = models.CharField(null=True, blank=True, verbose_name='Информация об адресе доставки.',
+                                        verbose_name='Delivery method')
+    cost_of_delivery = models.FloatField(default=0, verbose_name='Cost of delivery')
+    is_paid = models.BooleanField(default=False, verbose_name='Was the funds debited.')
+    delivery_department = models.CharField(null=True, blank=True, verbose_name='Shipping address information.',
                                            max_length=400)
-    courier = models.ForeignKey(CustomUser, on_delete=models.PROTECT, blank=True, null=True, verbose_name='Курьер',
+    courier = models.ForeignKey(CustomUser, on_delete=models.PROTECT, blank=True, null=True, verbose_name='Courier',
                                 related_name='courier')
-    phone_number = models.CharField(default='', null=True, blank=True, verbose_name='Номер телефона', max_length=20)
-    full_name = models.CharField(default='', null=True, blank=True, max_length=150, verbose_name='Адрес доставки')
-    notes = models.CharField(default='', null=True, blank=True, max_length=300, verbose_name='Комментарий к заказу')
+    phone_number = models.CharField(default='', null=True, blank=True, verbose_name='Phone number', max_length=20)
+    full_name = models.CharField(default='', null=True, blank=True, max_length=150, verbose_name='Delivery address')
+    notes = models.CharField(default='', null=True, blank=True, max_length=300, verbose_name='Comment on the order')
 
     class Meta:
         permissions = (('change_status', 'Can change status order'),)

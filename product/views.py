@@ -1,12 +1,11 @@
 from django.shortcuts import render, HttpResponseRedirect, get_object_or_404, redirect, HttpResponse
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
-
 from product.forms import ProductImage, PresentationImageForm
 from product.models import *
 from django.urls import reverse
 from django.forms.models import model_to_dict
-from product import forms
+from product import forms, tasks
 from accounts import models
 from product import services
 import json
@@ -22,7 +21,6 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.models import Group
 from product.tasks import *
 from accounts import tasks as acc_tasks
-
 
 
 # for compare strings
@@ -555,7 +553,7 @@ def basket(request):
         product_cnt = request.POST.get('cnt', 1)
         type_add2basket = request.POST.get('type_basket', 'add')
         if int(product_cnt) < 1:
-            data_response = {'error': 'Минимальное количество - 1'}
+            data_response = {'error': 'Min. count - 1'}
             return HttpResponse(json.dumps(data_response), content_type='application/json')
 
         product_cnt = 1 if not product_cnt else product_cnt
@@ -563,7 +561,7 @@ def basket(request):
             basket = services.Basket.add2basket(basket, product_id, product_cnt, user_id=request.user.id,
                                                 _type=type_add2basket)
             if type_add2basket == 'add':
-                data_response = {'success': f'Добавлено в корзину {product_cnt} товаров'}
+                data_response = {'success': f'Added to basket {product_cnt} products'}
             elif type_add2basket == 'edit':
                 total_cost = round(sum([i['qty'] * i['price'] for i in basket.values()]), 2)
                 total_cost_resp = f'{total_cost * request.session["rate_curr"]} {request.session["disp_curr"]}'
@@ -609,6 +607,7 @@ def checkout_page(request):
     delivery = Delivery.objects.all()
     if request.method == 'POST':
         data = request.POST.copy()
+        print(data)
         responce = {}
         id_delivery = data.get('delivery')
         order_delivery = Delivery.objects.get(pk=id_delivery)
@@ -644,7 +643,7 @@ def checkout_page(request):
                 OrderItem.add_item(item)
                 new_order.recalc_order()
             responce = {'success': True,
-                        'msg': f'Заказ оформлен.<br><a href="{reverse("invoice_page", kwargs={"pk": new_order.id})}">Перейти на страницу заказа</a>'}
+                        'msg': f'order is processed<br><a href="{reverse("invoice_page", kwargs={"pk": new_order.id})}">Go to the order page</a>'}
         else:
             responce = {'success': False, 'msg': create_order.errors}
 

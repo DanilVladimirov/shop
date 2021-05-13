@@ -89,3 +89,7 @@ def subscribes(request):
             form.save()
             return HttpResponseRedirect(request.path_info)
     return render(request, template, context)
+
+
+def wishlist(request):
+    return render(request, 'wishlist-page.html')

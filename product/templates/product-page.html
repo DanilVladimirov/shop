@@ -141,15 +141,21 @@
             </div>
         </div>
         {% if viewed_products %}
-            <h2>Просмотренные товары:</h2>
+            <h2>Viewed products</h2>
             <div class="card-group" style="display: flex;">
                 {{ viewed_products|safe }}
             </div>
         {% endif %}
         {% if recommend_pr %}
-            <br><br><h2>Похожие товары:</h2>
+            <br><br><h2>Similar products</h2>
             <div class="card-group" style="display: flex;">
                 {{ recommend_pr|safe }}
+            </div>
+        {% endif %}
+        {% if buy_together %}
+            <br><br><h2>Together with this product people buy:</h2>
+            <div class="card-group" style="display: flex;">
+                {{ buy_together|safe }}
             </div>
         {% endif %}
         {% if product.presentation_images %}
@@ -181,12 +187,6 @@
         {% if product.file_digit %}{{ product.file_digit.url }}{% endif %}
 
 
-        {% if buy_together %}
-            <br><br><h2>Покупают вместе</h2>
-            <div class="card-group" style="display: flex;">
-                {{ buy_together|safe }}
-            </div>
-        {% endif %}
     </div>
 
     <div id="About" class="tabcontent">
@@ -201,9 +201,10 @@
     <div id="Comments" class="tabcontent">
         <div>
             {% if user.is_authenticated %}
-                <div>
-                    <textarea name="comment" id="comment_text"></textarea><br>
-                    <button name="action" value="addcom" onclick="add_comment()">Добавить</button>
+                <div style="border: 2px solid;border-radius: 10px;padding: 10px;width: 400px;">
+                    <textarea style="max-width: 375px;margin: 0px;height: 64px;width: 558px;border-radius: 10px;"
+                              name="comment" id="comment_text"></textarea><br>
+                    <button class="btn send" name="action" value="addcom" onclick="add_comment()">Send</button>
                 </div>
             {% endif %}
             <div class="comments_all" id="id_comments_all">
@@ -212,18 +213,32 @@
                         {% load shop_tags %}
                         {% if request.user|has_group:"Moder" %}
                             <div>
-                                <button style="float: right;" onclick="del_comment({{ comm.id }})">delete</button>
+                                <button class="btn del" onclick="del_comment({{ comm.id }})">delete</button>
                             </div>
                         {% endif %}
                         <div class="comment_user">{{ comm.user.username }}</div>
                         <div class="comment_text">{{ comm.text }}</div>
-                        <div><span>likes: </span><span id="likes_{{ comm.id }}">{{ comm.likes }}</span></div>
+                        <div>
+                            <span>likes: </span><span id="likes_{{ comm.id }}">{{ comm.likes }}</span>
+                            {% if user.is_authenticated %}
+                                {% load product_tags %}
+                                {% if request.user|is_liked:comm.id %}
+                                    <button class="btn_like" onclick="like_comm({{ comm.id }})">
+                                        <img style="width: 25px;" id="like_{{ comm.id }}"
+                                             src="/static/heart_active.png">
+                                    </button>
+                                {% else %}
+                                    <button class="btn_like" onclick="like_comm({{ comm.id }})">
+                                        <img id="like_{{ comm.id }}" src="/static/heart.png">
+                                    </button>
+                                {% endif %}
+                            {% endif %}
+                        </div>
                         {% if user.is_authenticated %}
-                            <button onclick="like_comm({{ comm.id }})">like</button>
                             <hr>
-                            <textarea style="" class="textarea-reply" id="textarea_reply_{{ comm.id }}"
+                            <textarea class="textarea-reply" id="textarea_reply_{{ comm.id }}"
                                       placeholder="reply.."></textarea>
-                            <button onclick="reply_comm({{ comm.id }})">reply</button>
+                            <button class="btn send" onclick="reply_comm({{ comm.id }})">reply</button>
                         {% endif %}
                         <div class="replies-block" id="rep_block_{{ comm.id }}">
                             {% for replie in comm.replies.all %}
@@ -315,6 +330,7 @@
         }
 
         function like_comm(comm_id) {
+            like_b_id = '#like_' + comm_id;
             $.ajax({
                 type: 'POST', url: '{% url "like_comment" %}',
                 data: {'csrfmiddlewaretoken': scrf_token, 'comm_id': comm_id},
@@ -326,8 +342,10 @@
                     console.log(document.getElementById(likes_id));
                     if (data.success === 'like') {
                         likes.innerHTML = parseInt(likes.textContent) + 1;
+                        $(like_b_id).attr('src', '/static/heart_active.png');
                     } else if (data.success === 'unlike') {
                         likes.innerHTML = parseInt(likes.textContent) - 1;
+                        $(like_b_id).attr('src', '/static/heart.png');
                     }
                 }
             });
@@ -359,13 +377,13 @@
                 type: 'POST',
                 data: formData,
                 success: function (response) {
-                    {#$('.error').remove();#}
+
                     console.log(response)
                     if (response.success) {
                         $img_card = $('<div id="img_' + response.img_id + '" style="text-align: center;margin-top: 10px;"> <img style="width: 1200px;height: 400px;border-radius: 10px;object-fit: cover;}"src=' + response.img + '> <button onclick="del_img(' + response.img_id + ')">delete</button></div>');
                         $img_card.appendTo('#presentation_cards');
                     } else {
-                        {#window.location = ""#}
+
                     }
                 },
                 cache: false,
@@ -385,10 +403,13 @@
                     if (data.success) {
                         var $comment = $('<div class="comment_card"><div class="comment_user">{{ request.user.username }}</div> \
                             <div class="comment_text">' + data.comment_text + ' \ ' +
-                            '</div><div id="likes_' + data.comm_id + '">0</div> \ ' +
-                            '<button type="submit" onclick="like_comm(' + data.comm_id + ')">like</button> \ ' +
+                            '</div><div><span>likes: </span><span id="likes_' + data.comm_id + '">0</span> ' + ' \ ' +
+                            '<button class="btn_like" onclick="like_comm(' + data.comm_id + ')"> ' + ' \ ' +
+                            '    <img id="like_' + data.comm_id + '" src="/static/heart.png"> ' + ' \ ' +
+                            '</button>' + ' \ ' +
+                            '</div>' + ' \ ' +
                             '<hr> <textarea style="" class="textarea-reply" id="textarea_reply_' + data.comm_id + '"placeholder="reply.."> \ ' +
-                            '</textarea> <button onclick="reply_comm(' + data.comm_id + ')">reply</button> \ ' +
+                            '</textarea> <button class="btn send" onclick="reply_comm(' + data.comm_id + ')">reply</button> \ ' +
                             '<div class="replies-block" id="rep_block_' + data.comm_id + '"></div></div>');
                         {#var block_comments = document.getElementById('id_comments_all')#}
                         {#var first = block_comments.firstChild#}
@@ -396,10 +417,7 @@
                         $comment.appendTo('.comments_all');
 
                     } else {
-                        {#var $item = $('<span class="msg">' + data.error + '</span>');#}
-                        {#$item.appendTo('.form_add_basket').delay(4000).slideUp(500, function () {#}
-                        {#    $item.remove();#}
-                        // });
+
                     }
                 }
             });

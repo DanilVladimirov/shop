@@ -24,3 +24,8 @@ def is_product_compare(request, pid):
             return False
     else:
         return False
+
+
+@register.filter(name='is_liked')
+def is_liked(user, comm_id):
+    return user.liked_comments.filter(id=comm_id).exists()

@@ -5,10 +5,32 @@
 {% block body %}
 
     <div class="control_panel_div">
-        <button onclick="location.href='{% url 'logout' %}'" class="btn_signout">sign out</button>
+
+        <div style="float: right">
+            <span>Send events to my mail</span>
+            {% if request.user.subscription_email %}
+                <input type="checkbox" checked onchange="send_emails_user()">
+            {% else %}
+                <input type="checkbox">
+            {% endif %}
+        </div>
+
+        <form class="user_change_form">
+            <input type="text" placeholder="first name" name="first_name">
+            <input type="text" placeholder="last name" name="last_name">
+            <button class="btn change">Change</button>
+        </form>
+
+        <button onclick="location.href='{% url 'logout' %}'" class="btn sign_out">sign out</button>
         {% load shop_tags %}
         {% if request.user|has_group:"Seller" %}
-            <button class="button_compare" onclick="location.href='{% url 'seller_products' %}'">my products</button>
+            <button class="btn my_products" onclick="location.href='{% url 'seller_products' %}'">my products</button>
         {% endif %}
+        <button class="btn my_products" onclick="location.href='{% url 'wishlist_page' %}'">Wishlist</button>
     </div>
+    <script>
+        function send_emails_user() {
+
+        }
+    </script>
 {% endblock %}

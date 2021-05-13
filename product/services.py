@@ -45,9 +45,12 @@ class Basket:
     def add2basket(basket, product_id, qty, user_id = None, _type = 'add'):
         product = get_object_or_404(Product, id = product_id)
         product_info = model_to_dict(product)
-        del(product_info['cid'])
-        del(product_info['photo'])
-        del(product_info['file_digit'])
+        product_info = {
+            'id': product.id,
+            'title': product.title,
+            'type_product': product.type_product,
+            'price': product.price,
+        }
         if not basket.get(str(product_id)):
             basket[str(product_id)] = product_info
         now_qty = basket[str(product_id)].get('qty', 0)
@@ -105,6 +108,7 @@ class OrderServise:
 class ProductServices:
 
     def filter_product(data):
+        context = {}
         filter_product = {}
         if data.get('pid'):
             try:
@@ -119,7 +123,7 @@ class ProductServices:
 
     def export_to_file(type_file):
         if type_file == 'csv':
-            with open('export.csv', 'w', newline='',encoding='utf-8') as f:
+            with open('export.csv', 'w', newline='', encoding='utf-8') as f:
                 export_file = csv.DictWriter(f, fieldnames = [
                     'Название',
                     'Остаток',

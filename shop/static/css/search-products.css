@@ -1,11 +1,13 @@
 .category_name {
     font-size: 30px;
     margin-left: 10px;
-    color:#7a7a7a;
+    color: #7a7a7a;
 }
+
 .content {
     display: flex;
 }
+
 .filters {
     width: 200px;
     background-color: #f5f5f5;
@@ -13,9 +15,11 @@
     margin-left: 10px;
     padding: 10px;
 }
+
 .products {
     margin-left: 40px;
 }
+
 .product_card {
     display: grid;
     margin-left: 10px;
@@ -25,12 +29,16 @@
     border-style: solid;
     border-width: 1px;
     transition: all 0.3s ease;
+    width: 160px;
+    height: 280px;
 }
+
 .product_card:hover {
-    border-width: 4px;
+    border-width: 3px;
     /*border-radius: 15px;*/
     transition: all 0.3s ease;
 }
+
 .product_card img {
     border-radius: 10px 10px 10px 10px;
     width: 140px;
@@ -38,10 +46,14 @@
     object-fit: cover;
     margin: auto;
 }
+
 .product_card a {
     text-align: center;
-    text-decoration: none;font-size: 20px;
+    text-decoration: none;
+    font-size: 20px;
 }
+
 .product_card_price {
-    font-size: 20px;text-align: center;
+    font-size: 20px;
+    text-align: center;
 }

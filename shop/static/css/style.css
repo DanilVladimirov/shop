@@ -37,7 +37,7 @@ body {
 }
 
 .topnav a.active {
-    background-color: #2196F3;
+    background-color: #e9e9e9;
     color: white;
 }
 
@@ -119,6 +119,7 @@ body {
     left: 0;
     opacity: 0;
     visibility: hidden;
+
 }
 
 .popup:target {
@@ -144,7 +145,7 @@ body {
     color: black;
     padding: 30px;
     position: relative;
-    opacity: 0;
+    /*opacity: 0;*/
     border-radius: 10px;
     transition: all 0.8s ease 0s;
     transform: translate(0px, -100%);
@@ -168,6 +169,24 @@ body {
     cursor: default;
     display: inline-grid;
     text-align: center;
+}
+
+@keyframes fading {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes pop_content {
+    0% {
+        transform: translate(0px, 0px);
+    }
+    100% {
+        transform: translate(0px, -100%);
+    }
 }
 
 .text_empty {
@@ -198,14 +217,17 @@ body {
 .form_delete_category {
     float: right;
 }
+
 .form_delete_category button {
     padding: 0;
     border: 0;
     background: none;
 }
+
 .img_trash {
     width: 25px;
 }
+
 .categories_popup {
     background-color: #1b6d85;
     z-index: 1;
@@ -218,14 +240,17 @@ body {
     opacity: 0;
     visibility: hidden;
 }
-.categories_popup:target{
+
+.categories_popup:target {
     opacity: 1;
     visibility: visible;
     transition: all 0.2s ease;
 }
+
 .right_side {
     float: right;
 }
+
 .left_side {
     float: left;
 }

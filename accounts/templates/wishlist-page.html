@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/search-products.css">
+{% endblock %}
+{% block body %}
+    <div style="text-align: center;"><span style="font-size: 40px;color: dimgray;"><b>Wishlist</b></span></div>
+    <div class="products" style="display: flex;">
+        {% if request.user.wishlist_set.all %}
+            {% for wish in request.user.wishlist_set.all %}
+                <div class="product_card" onclick="location.href='{% url 'product_page' wish.product.id %}'">
+                    {% load static %}
+                    <img src="/static/img.jpeg">
+                    <a href="{% url 'product_page' wish.product.id %}">{{ wish.product.title }}</a>
+                    {% if wish.product.old_price != 0 %}
+                        <span style="text-align: center">old price: {{ wish.product.old_price }}</span>
+                        <span class="product_card_price red">{{ wish.product.price }}</span>
+                    {% else %}
+                        <span class="product_card_price">{{ wish.product.price }}</span>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            </div>
+        {% else %}
+            <span style="font-size: 40px">Empty.</span>
+        {% endif %}
+
+{% endblock %}
