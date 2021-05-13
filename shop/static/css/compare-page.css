@@ -7,6 +7,10 @@
     padding: 10px;
     margin-right: 10px;
 }
+.product_column img {
+    height: 150px;
+    object-fit: cover;
+}
 .columns {
     display: flex;
 }

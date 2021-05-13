@@ -7,7 +7,7 @@
         {% if products %}
             {% for product in products %}
                 <div class="product_column">
-                    <img style="width: 140px;" src="{{ product.photo.url }}"><br>
+                    <img src="{{ product.photo.url }}"><br>
                     <span style="color: gray;font-size: 20px"><b>{{ product.title }}</b></span><br>
                     <hr>
                     {% for attr in product.attrs.all %}

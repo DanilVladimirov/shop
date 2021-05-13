@@ -44,7 +44,7 @@
                             {% else %}
                                 {% if product.old_price != 0 %}
                                     <span>old price: {{ product.old_price }}</span><br>
-                                    <span class="product_price red">{{ product.price|mul:rate_select_currency }} {{ disp_select_currency }}</span>
+                                    <span class="product_price" style="color: red;">{{ product.price|mul:rate_select_currency }} {{ disp_select_currency }}</span>
                                     <br>
                                 {% else %}
                                     <span class="product_price">{{ product.price|mul:rate_select_currency }} {{ disp_select_currency }}</span>
@@ -165,7 +165,7 @@
                         <img style="width: 1200px;height: 400px;border-radius: 10px;object-fit: cover;}"
                              src="{{ image.image.url }}">
                         {% if product.author.id == request.user.id %}
-                            <button onclick="del_img({{ image.id }})">delete</button>
+                            <br><button style="float: right" onclick="del_img({{ image.id }})">delete</button>
                         {% endif %}
                     </div>
                 {% endfor %}
@@ -380,7 +380,7 @@
 
                     console.log(response)
                     if (response.success) {
-                        $img_card = $('<div id="img_' + response.img_id + '" style="text-align: center;margin-top: 10px;"> <img style="width: 1200px;height: 400px;border-radius: 10px;object-fit: cover;}"src=' + response.img + '> <button onclick="del_img(' + response.img_id + ')">delete</button></div>');
+                        $img_card = $('<div id="img_' + response.img_id + '" style="text-align: center;margin-top: 10px;"> <img style="width: 1200px;height: 400px;border-radius: 10px;object-fit: cover;}"src=' + response.img + '> <br><button style="float: right" onclick="del_img(' + response.img_id + ')">delete</button></div>');
                         $img_card.appendTo('#presentation_cards');
                     } else {
 

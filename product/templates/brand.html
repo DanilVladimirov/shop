@@ -4,8 +4,17 @@
 {% endblock %}
 {% block body %}
     <div class="top_div">
-        <span class="brand_name">{{ brand.name }}</span>
+        <div style="display: inline-flex;">
+            <img style="width: 100px;border-radius: 50%;" src="{{ brand.photo.url }}">
+            <div style="margin: auto 0px auto 10px;">
+                <span class="brand_name">{{ brand.name }}</span>
+            </div>
+        </div>
     </div>
+    <div style="text-align: center;width: 600px;margin: auto;}">
+        <span>{{ brand.description }}</span>
+    </div>
+    <hr>
     <div class="categories_cards">
         {% for category in brand.categories.all %}
             <div class="card">

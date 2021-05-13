@@ -10,12 +10,11 @@
         {% endfor %}
     </div>
     {% if promotions %}
-        <div class="slideshow-container">
+        <div class="slideshow-container" style="margin-top: 10px;">
             {% for promotion in promotions %}
                 <div class="mySlides fade">
-                    <img onclick="location.href='{% url 'promotion_page' promotion.id %}'"
+                    <img style="border-radius: 10px" onclick="location.href='{% url 'promotion_page' promotion.id %}'"
                          src="{{ promotion.image.url }}">
-                    <div class="text">{{ promotion.title }}</div>
                 </div>
             {% endfor %}
             <a class="prev" onclick="plusSlides(-1)">&#10094;</a>

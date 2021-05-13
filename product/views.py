@@ -13,6 +13,7 @@ import requests
 import datetime
 from dotenv import load_dotenv
 from product import convert_html
+
 load_dotenv()
 import os
 from django.db.models import Sum
@@ -83,6 +84,8 @@ def search_products(request):
     if not category and not products and not brands:
         context = {'bad_search': True}
     else:
+        if len(products) == 1:
+            return redirect(reverse('product_page', kwargs={'pid': products[0].id}))
         context = {'category': category,
                    'products': products,
                    'brands': brands,
@@ -498,7 +501,9 @@ def reply_comment(request):
                                                                       'comm_text': comment.text,
                                                                       'product_title': comment.product_set.get().title,
                                                                       'text_reply': new_reply.text,
-                                                                      'product_url': request.build_absolute_uri(reverse('product_page',kwargs={'pid': comment.product_set.get().id}))})
+                                                                      'product_url': request.build_absolute_uri(
+                                                                          reverse('product_page', kwargs={
+                                                                              'pid': comment.product_set.get().id}))})
             text_content = strip_tags(html_content)
             list_users = [comment.user.email]
 
@@ -631,7 +636,7 @@ def checkout_page(request):
                 if data.get('promo').type_promo == 'onceuse':
                     data.get('promo').status = False
                     data.get('promo').save()
-            
+
             if request.user:
                 acc_tasks.send_create_order.delay(request.user.id, new_order.id, new_order.get_absolute_url())
             for good in basket.values():
@@ -653,7 +658,6 @@ def checkout_page(request):
 
     return render(request, 'product/checkout_page.html',
                   context={'products': basket, 'total_cost': total_cost, 'all_delivery': delivery})
-
 
 
 def all_invoices(request):
