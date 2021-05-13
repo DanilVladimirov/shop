@@ -93,3 +93,32 @@ def subscribes(request):
 
 def wishlist(request):
     return render(request, 'wishlist-page.html')
+
+
+def mail_sub(request):
+    if request.POST:
+        user = request.user
+        if user.subscription_email:
+            user.subscription_email = False
+        else:
+            user.subscription_email = True
+        user.save()
+        data_response = {'sub': user.subscription_email}
+
+        return HttpResponse(json.dumps(data_response), content_type='application/json')
+
+
+def change_fullname(request):
+    if request.POST:
+        user = request.user
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        if not first_name == ' ' and not last_name == ' ':
+            user.first_name = request.POST.get('first_name')
+            user.last_name = request.POST.get('last_name')
+            user.save()
+            data_response = {'success': True}
+        else:
+            data_response = {'success': False}
+
+        return HttpResponse(json.dumps(data_response), content_type='application/json')

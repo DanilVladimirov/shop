@@ -10,6 +10,10 @@ urlpatterns = [
     path('subscribes/', subscribes, name='subscribe'),
     path('mailing_promotions/', mailing_promotions, name='mailing_promotions'),
     path('user-page/', user_page, name='user_page'),
-    path('wishlist/', wishlist, name='wishlist_page')
+    path('wishlist/', wishlist, name='wishlist_page'),
+    path('mail_sub/', mail_sub, name='mail_sub'),
+    path('change_fullname/', change_fullname, name='change_fullname')
+
+
 ]
 

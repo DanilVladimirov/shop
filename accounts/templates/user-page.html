@@ -9,16 +9,17 @@
         <div style="float: right">
             <span>Send events to my mail</span>
             {% if request.user.subscription_email %}
-                <input type="checkbox" checked onchange="send_emails_user()">
+                <input id="sub_email" type="checkbox" checked onchange="mail_sub()">
             {% else %}
-                <input type="checkbox">
+                <input id="sub_email" type="checkbox" onchange="mail_sub()">
             {% endif %}
         </div>
 
-        <form class="user_change_form">
+        <form class="user_change_form" id="user_full_name">
+            {% csrf_token %}
             <input type="text" placeholder="first name" name="first_name">
             <input type="text" placeholder="last name" name="last_name">
-            <button class="btn change">Change</button>
+            <button type="submit" class="btn change">Change</button>
         </form>
 
         <button onclick="location.href='{% url 'logout' %}'" class="btn sign_out">sign out</button>
@@ -29,8 +30,41 @@
         <button class="btn my_products" onclick="location.href='{% url 'wishlist_page' %}'">Wishlist</button>
     </div>
     <script>
-        function send_emails_user() {
+        function mail_sub() {
+            $.ajax({
+                type: 'POST', url: '{% url "mail_sub" %}',
+                data: {'csrfmiddlewaretoken': scrf_token},
+                dataType: 'json',
+                cache: false,
+                success: function (data) {
+                    if (data.sub) {
 
+                    } else {
+
+                    }
+                }
+            });
         }
+
+        $('#user_full_name').submit(function (e) {
+            e.preventDefault();
+            $form = $(this)
+            var formData = new FormData(this);
+            $.ajax({
+                url: {% url 'change_fullname' %},
+                type: 'POST',
+                data: formData,
+                success: function (response) {
+                    if (response.success) {
+                        $('#user_full_name')[0].reset();
+                    } else {
+
+                    }
+                },
+                cache: false,
+                contentType: false,
+                processData: false
+            });
+        });
     </script>
 {% endblock %}
