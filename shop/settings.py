@@ -12,7 +12,6 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
-
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('SECRET_KEY')
 TG_TOKEN = os.environ.get('TG_TOKEN')
@@ -34,6 +33,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_framework',
     'django_celery_results',
+    'django_filters',
     'mathfilters',
     'accounts',
     'shop',
@@ -78,7 +78,6 @@ LOGIN_REDIRECT_URL = '/'
 
 WSGI_APPLICATION = 'shop.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
@@ -88,7 +87,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -108,9 +106,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
@@ -123,7 +118,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 AWS_LOCATION = 'static'
 
@@ -142,9 +136,8 @@ STATIC_URL = 'https://project-geek.s3.us-east-2.amazonaws.com/'
 STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'"""
 django_heroku.settings(locals())
 
-prod_db=dj_database_url.config(conn_max_age=500)
+prod_db = dj_database_url.config(conn_max_age=500)
 DATABASES['default'].update(prod_db)
-
 
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
@@ -173,8 +166,7 @@ REST_FRAMEWORK = {
     )
 }
 
-TOKEN_EXPIRED_AFTER_SECONDS = 60*60*24*365*3
-
+TOKEN_EXPIRED_AFTER_SECONDS = 60 * 60 * 24 * 365 * 3
 
 mimetypes.add_type("text/css", ".css", True)
 
@@ -207,3 +199,20 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = 587
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',  # custom authentication class
+        'rest_framework.authentication.SessionAuthentication',  # custom authentication class
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAdminUser',
+    ),
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+
+}
+
+TOKEN_EXPIRED_AFTER_SECONDS = 60 * 60 * 24 * 365 * 3

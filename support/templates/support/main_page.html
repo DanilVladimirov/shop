@@ -1,16 +1,28 @@
-{% extends 'base_new.html' %}
+{% extends 'base.html' %}
 
-{% block content %}
-<form action="" method="POST">
-    {% csrf_token %}
-    Тема письма: <input type="text" name='subject'><br>
-    Введите сообщение:<br>
-    <textarea name="message" id="" cols="30" rows="10"></textarea>
-    <button>Отправить</button>
-</form>
+{% block body %}
+    <div style="margin-top: 10px;text-align: center;">
+        <span style="font-size: 30px;color: gray;">Create ticket:</span>
+    </div>
+    <div style="width: 400px; margin: auto; padding: 10px; border: 2px solid; border-radius: 10px;">
+        <form action="" method="POST">
+            {% csrf_token %}
+            Message subject: <input style="width: 376px;height: 30px;border-radius: 10px;border: 2px solid;" type="text"
+                                    name='subject'><br>
+            Message:<br>
+            <textarea style="max-width: 376px;width: 376px;min-width:376px;border-radius: 10px;" name="message" id=""
+                      cols="30"
+                      rows="10"></textarea>
+            <button>Send</button>
+        </form>
+    </div>
 
-<p>My tickets:</p>
-{% for ticket in tickets %}
-    <a href="{%url 'answer_ticket_page' ticket.id%}">{{ticket.title}}</a>
-{%endfor%}
+    <div style="margin-top: 10px;text-align: center;">
+        <span style="font-size: 30px;color: gray;">My tickets:</span>
+    </div>
+    <div style="width: 400px; margin: auto; padding: 10px; border: 2px solid; border-radius: 10px;">
+        {% for ticket in tickets %}
+            {{ forloop.counter }} - <a href="{% url 'answer_ticket_page' ticket.id %}">{{ ticket.title }}</a><br>
+        {% endfor %}
+    </div>
 {% endblock %}

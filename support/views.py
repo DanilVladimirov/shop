@@ -9,7 +9,7 @@ from accounts import subscribe
 def support_main_page(request):
     template = 'support/main_page.html'
     context = {}
-    MyTicket = Ticket.objects.filter(user = request.user)
+    MyTicket = Ticket.objects.filter(user=request.user)
     context['tickets'] = MyTicket
     if request.method == 'POST':
         data = request.POST
@@ -17,12 +17,12 @@ def support_main_page(request):
         ticket_msg = data.get('message')
         if ticket_msg and ticket_sub:
             new_ticket = Ticket.objects.create(
-                title = ticket_sub,
-                user = request.user,
+                title=ticket_sub,
+                user=request.user,
             )
             new_msg = TicketMessage.objects.create(
-                ticket = new_ticket,
-                message = ticket_msg,
+                ticket=new_ticket,
+                message=ticket_msg,
             )
 
     return render(request, template, context)
@@ -36,9 +36,10 @@ def all_ticket(request):
     context['tickets'] = tickets
     return render(request, template, context)
 
+
 def answer_ticket_support(request, pk):
     template = 'support/answer_ticket.html'
-    ticket = get_object_or_404(Ticket, pk = pk)
+    ticket = get_object_or_404(Ticket, pk=pk)
     context = {}
     context['form'] = forms.SupportAnswer()
     context['ticket_status'] = forms.TicketStatus(instance=ticket)
@@ -59,19 +60,26 @@ def answer_ticket_support(request, pk):
 
 
 def answer_ticket(request, pk):
-    template = 'support/answer_ticket.html'
-    ticket = get_object_or_404(Ticket, pk = pk)
+    template = 'support/answer_ticket_user.html'
+    ticket = get_object_or_404(Ticket, pk=pk)
     context = {}
+    context['form'] = forms.SupportAnswer()
     context['messages'] = ticket.ticketmessage_set.all()
     if request.method == 'POST':
         data = request.POST
         msg_answer = data.get('answer')
+        form_answer = forms.SupportAnswer(request.POST)
+        if form_answer.is_valid():
+            message = form_answer.cleaned_data['message']
+            form_answer = form_answer.save(commit=False)
+            form_answer.ticket = ticket
+            form_answer.save()
         if msg_answer:
             ticket.status = 'open'
             ticket.save()
             TicketMessage.objects.create(
-                ticket = ticket,
-                message = msg_answer,
+                ticket=ticket,
+                message=msg_answer,
             )
             print(msg_answer)
             return HttpResponseRedirect(request.path)

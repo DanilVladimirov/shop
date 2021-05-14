@@ -1,29 +1,33 @@
-{% extends 'base_new.html' %}
+{% extends 'base.html' %}
 
-{% block content %}
-В какой формат сделать экспорт:
-<button type="submit" onclick="export_products('csv')">CSV</button>
-<button type="submit" onclick="export_products('xlsx')">XLSX</button>
-<br>
-<span class = 'msg'></span>
-<script>
-    function export_products(type){
-        $('.msg').html('Выполняется экспорт...')
-        $.ajax({
-            type: 'POST', url: '{% url "export_products" %}',
-            data:{'csrfmiddlewaretoken':scrf_token, 'type':type},
-            dataType: 'json',
-            cache: false,
-            success: function(data){
-                if (data.success){
-                    $('.msg').html('Ссылка на файл: '+data.success)
+{% block body %}
+    <div style="margin-top: 10px;text-align: center;">
+        <span style="font-size: 30px;color: gray;">Export</span>
+    </div>
+    <div style="width: 400px;margin: auto;padding: 10px;border: 2px solid;border-radius: 10px;margin-top: 10px;">
+        <span>Choose format:</span>
+        <button type="submit" onclick="export_products('csv')">CSV</button>
+        <button type="submit" onclick="export_products('xlsx')">XLSX</button>
+        <br>
+        <span class='msg'></span>
+    </div>
+    <script>
+        function export_products(type) {
+            $('.msg').html('Export in progress...')
+            $.ajax({
+                type: 'POST', url: '{% url "export_products" %}',
+                data: {'csrfmiddlewaretoken': scrf_token, 'type': type},
+                dataType: 'json',
+                cache: false,
+                success: function (data) {
+                    if (data.success) {
+                        $('.msg').html('Link to the file: ' + '<a href=" ' + data.success + ' ">file</a>')
+                    } else {
+                        $('.msg').html('Oops! Something went wrong...')
+
+                    }
                 }
-                else {
-                    $('.msg').html('Упс! Что-то пошло не так...')
-                    
-                }
-            }
-        });
-}
-</script>
+            });
+        }
+    </script>
 {% endblock %}

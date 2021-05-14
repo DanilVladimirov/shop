@@ -1,19 +1,26 @@
-{% extends 'base_new.html' %}
+{% extends 'base.html' %}
 {% load mathfilters %}
 
-{% block content %}
-hello
-<form action="" method="POST">
-    {%csrf_token%}
-    {% for category in categories %}
-        {{category.name}} <input type="checkbox" name="id_cat_{{category.id}}" value="{{category.id}}"><br>
-    {% endfor %}
-    <select name="type_edit">
-        <option value="fix">фиксированное</option>
-        <option value="relative">в процентах</option>
-    </select>
-    <input type="number" name="value_edit_price" step=0.01 value="0"><br>
-    Перенести поле "Цена" в "Старая цена": <input type="checkbox" name="is_edit_old_price" id="">
-    <input type="submit" value="Edit">
-</form>
+{% block body %}
+    <div style="text-align: center;margin-top: 10px;"><span
+            style="font-size: 30px;color: gray;">Edit price in category</span></div>
+    <div style="width: 400px;margin: auto;border: 2px solid;padding: 10px;border-radius: 10px;margin-top: 10px;">
+        <form action="" method="POST">
+            {% csrf_token %}
+            {% for category in categories %}
+                <div>{{ category.name }}
+                    <input style="float: right" type="checkbox" name="id_cat_{{ category.id }}"
+                           value="{{ category.id }}">
+                </div>
+                <br>
+            {% endfor %}
+            <select name="type_edit">
+                <option value="fix">Fixed value</option>
+                <option value="relative">Percentage value</option>
+            </select>
+            <input type="number" name="value_edit_price" step=0.01 value="0"><br>
+            Move the "Price" field to " Old price": <input type="checkbox" name="is_edit_old_price" id="">
+            <input type="submit" value="Edit">
+        </form>
+    </div>
 {% endblock %}

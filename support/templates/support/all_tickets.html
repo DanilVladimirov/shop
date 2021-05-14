@@ -1,12 +1,18 @@
-{% extends 'base_new.html' %}
+{% extends 'base.html' %}
 
-{% block content %}
-<div style="background-color: #cccccc;">    
-    <p><a href="?type=new">New</a></p>
-    <p><a href="?type=open">Open</a></p>
-</div>
-    
-{% for ticket in tickets%}
-    <a href="{% url 'answer_ticket_support_page' ticket.id %}">{{ticket.title}}</a>
-{%endfor%}
+{% block body %}
+    <div style="margin: auto; width: 500px;padding: 10px; border-radius: 10px; border: 2px solid;margin-top:10px;">
+        <div>
+            <a href="?type=new">New</a>
+            <a href="?type=open">Open</a>
+        </div>
+        <div>
+            {% for ticket in tickets %}
+                <div style="padding: 4px;border:2px solid; border-radius: 10px;margin-top: 5px;">
+                    {{ forloop.counter }} - <a
+                        href="{% url 'answer_ticket_support_page' ticket.id %}">{{ ticket.title }}</a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
 {% endblock %}

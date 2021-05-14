@@ -9,18 +9,14 @@
     </style>
 {% endblock %}
 {% block body %}
-
-    <div style="padding: 20px 0px 0px 20px;">
-        <a style="font-size: 30px;" href="{% url 'all_ticket_page' %}">tikets</a>
-    </div>
     <div style="width: 400px;margin: auto;padding: 10px;border: 2px solid;border-radius: 10px;margin-top: 10px;display: grid;">
         {% for msg in messages %}
             <div style="margin-bottom: 10px;">
                 {% if msg.support_user %}
-                    <div style="text-align: right;display: inline-block;padding: 4px;border-radius: 10px 10px 2px 10px;max-width: 200px;word-break: break-all;background-color: #2196F3;color: white;float:right;margin-bottom: 5px;">
+                    <div style="text-align: left;display: inline-block;padding: 4px;border-radius: 10px 10px 10px 2px;border: 1px solid;max-width: 200px;word-break: break-all;margin-bottom: 5px;">
                         <span>{{ msg.message }}</span></div><br>
                 {% else %}
-                    <div style="text-align: left;display: inline-block;padding: 4px;border-radius: 10px 10px 10px 2px;border: 1px solid;max-width: 200px;word-break: break-all;margin-bottom: 5px;">
+                    <div style="text-align: right;display: inline-block;padding: 4px;border-radius: 10px 10px 2px 10px;max-width: 200px;word-break: break-all;background-color: #2196F3;color: white;float:right;margin-bottom: 5px;">
                         <span>{{ msg.message }}</span></div><br>
                 {% endif %}
             </div>

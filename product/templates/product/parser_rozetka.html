@@ -1,37 +1,49 @@
-{% extends 'base_new.html' %}
-{% block content %}
-Введи ссылку на категорию с товарами:
-<input type="text" id = 'link_to_category_rozetka'>
-<button type="submit" id = 'btn_preview' onclick="pars_products()">Украсть материалы!</button>
-
-<div id='result_msg'></div>
-<script>
-    function pars_products(){
-        var btn_import = $('#btn_import');
-        btn_import.prop('disabled', true);
-        var item = $('#result_msg');
-        item.css('display', 'block');
-        item.css('color', '');
-        $('#result_msg').text('Выполняется проверка файла...');
-        var link = $('#link_to_category_rozetka').val();
-        $.ajax({
-            type: 'POST', url: '{% url "parser_rozetka" %}',
-            data:{'csrfmiddlewaretoken':scrf_token, 'link':link},
-            dataType: 'json',
-            cache: false,
-            success: function(data){
-                btn_import.prop('disabled', false);
-                if (data.error){
-                    item.css('color','#ff0000');
-                    item.html(data.error).delay(4000).slideUp(500, function(){item.html();});
+{% extends 'base.html' %}
+{% block body %}
+    <div style="margin-top: 10px;text-align: center;">
+        <span style="font-size: 30px;color: gray;">Parser Rozetka</span>
+    </div>
+    <div style="width: 400px;margin: auto;padding: 10px;border: 2px solid;border-radius: 10px;margin-top: 10px;">
+        Enter a link to the product category
+        <input type="text" id='link_to_category_rozetka'>
+        <button type="submit" id='btn_preview' onclick="pars_products()">Steal materials!</button>
+        <br>
+        <div id='result_msg'></div>
+    </div>
+    <script>
+        function pars_products() {
+            var btn_import = $('#btn_import');
+            btn_import.prop('disabled', true);
+            var item = $('#result_msg');
+            item.css('display', 'block');
+            item.css('color', '');
+            $('#result_msg').text('Checking the file...');
+            var link = $('#link_to_category_rozetka').val();
+            $.ajax({
+                type: 'POST', url: '{% url "parser_rozetka" %}',
+                data: {'csrfmiddlewaretoken': scrf_token, 'link': link},
+                dataType: 'json',
+                cache: false,
+                success: function (data) {
+                    btn_import.prop('disabled', false);
+                    if (data.error) {
+                        item.css('color', '#ff0000');
+                        item.html(data.error).delay(4000).slideUp(500, function () {
+                            item.html();
+                        });
+                    }
+                    if (data.success) {
+                        var new_item = item.html(data.success);
+                        if (!data.preview) {
+                            new_item.delay(4000).slideUp(500, function () {
+                                item.html();
+                            });
+                        }
+                    } else {
+                        console.log('error');
+                    }
                 }
-                if (data.success) {
-                    var new_item = item.html(data.success);
-                    if (!data.preview){new_item.delay(4000).slideUp(500, function(){item.html();});
-                }
-                } else {console.log('error');}
-            }
-        });
-    }
-</script>
+            });
+        }
+    </script>
 {% endblock %}

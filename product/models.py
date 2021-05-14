@@ -289,12 +289,12 @@ class Delivery(models.Model):
 class Promocode(models.Model):
     # table with promocode
     type_discount_choices = [
-        ('fixed', 'Фиксированная'),
-        ('relative', 'Относительная'),
+        ('fixed', 'Fixed'),
+        ('relative', 'Relative'),
     ]
     type_promo_choices = [
-        ('onceuse', 'Одноразовые'),
-        ('reusable', 'Многоразовые'),
+        ('onceuse', 'Disposable'),
+        ('reusable', 'Reusable'),
     ]
     code = models.CharField(max_length=200, unique=True)
     type_code = models.CharField(default='fixed', choices=type_discount_choices, max_length=50)

@@ -1,11 +1,30 @@
-{% extends 'base_new.html' %}
+{% extends 'base.html' %}
+{% block head %}
+    <style>
+        .div_create_promo {
+            text-align: center;
+        }
 
-{% block content %}
-<form action="" method="POST">
-    {%for field in form%}
-        {%csrf_token%}
-        {{field}}
-        {%endfor%}
-    <input type="submit" value="Отправить">
-</form>    
+        .div_create_promo input, select {
+            margin-bottom: 10px;
+            width: 250px;
+            height: 30px;
+            border-radius: 10px;
+            border: 2px solid;
+        }
+
+    </style>
+{% endblock %}
+{% block body %}
+    <div class="div_create_promo">
+        <span style="font-size: 30px;color: gray;">Create Promo-code</span><br>
+
+        <form action="" method="POST" style="display: inline-grid;padding: 10px;border: 2px solid;border-radius: 10px;">
+            {% for field in form %}
+                {% csrf_token %}
+                {{ field }}
+            {% endfor %}
+            <input type="submit" value="Create">
+        </form>
+    </div>
 {% endblock %}

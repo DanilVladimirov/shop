@@ -61,7 +61,8 @@
                 <br><br>
                 <input type='hidden' id='delivery_department' name="delivery_department" value=''>
                 <input type="text" required placeholder="Phone number" name='phone_number'><br><br>
-                <input type="text" required placeholder="Full name" name='full_name'><br><br>
+                <input type="text" required placeholder="Full name" name='full_name'
+                       value="{{ request.user.first_name }} {{ request.user.last_name }}"><br><br>
                 <br><textarea name='notes' placeholder="Your comment" rows="5" cols="45"></textarea><br>
             </form>
             <hr>

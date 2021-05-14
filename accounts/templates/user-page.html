@@ -15,7 +15,18 @@
             {% endif %}
         </div>
 
-        <form class="user_change_form" id="user_full_name">
+        <form action="/shop/currency" method="POST" id='select_currency_form' style="margin-right: 10px;float:right;">
+            {% csrf_token %}
+            <span>Currency:</span><select name="all_currency"
+                                          onchange="document.getElementById('select_currency_form').submit()">
+            {% for curr in all_currency %}
+                <option value={{ curr.code }} {% if request.session.curr_id == curr.code %}selected{% endif %}>{{ curr.name }}</option>
+            {% endfor %}
+        </select>
+        </form>
+
+        <form class="user_change_form" id="user_full_name" style="border: 2px solid;padding: 10px;border-radius: 10px;">
+            <span style="text-align: center;color: gray;">Change full name</span>
             {% csrf_token %}
             <input type="text" placeholder="first name" name="first_name">
             <input type="text" placeholder="last name" name="last_name">
@@ -23,11 +34,44 @@
         </form>
 
         <button onclick="location.href='{% url 'logout' %}'" class="btn sign_out">sign out</button>
+        <button class="btn my_products" onclick="location.href='{% url 'wishlist_page' %}'">wishlist</button>
+        <button class="btn my_products" onclick="location.href='{% url 'support_main_page' %}'">my tickets
+        </button>
+        <button class="btn my_products" onclick="location.href='{% url 'subscribe' %}'">telegram
+        </button>
         {% load shop_tags %}
         {% if request.user|has_group:"Seller" %}
             <button class="btn my_products" onclick="location.href='{% url 'seller_products' %}'">my products</button>
         {% endif %}
-        <button class="btn my_products" onclick="location.href='{% url 'wishlist_page' %}'">Wishlist</button>
+
+        {% if request.user|has_group:"Moder" %}
+            <hr>
+            Moder:
+            <div>
+                <button class="btn my_products" onclick="location.href='{% url 'create_promocode_page' %}'">promo-code
+                </button>
+                <button class="btn my_products" onclick="location.href='{% url 'edit_price_in_category' %}'">edit
+                    price
+                </button>
+                <button class="btn my_products" onclick="location.href='{% url 'import_products' %}'">import
+                </button>
+                <button class="btn my_products" onclick="location.href='{% url 'export_products' %}'">export
+                </button>
+                <button class="btn my_products" onclick="location.href='{% url 'parser_rozetka' %}'">parser
+                </button>
+                <button class="btn my_products" onclick="location.href='{% url 'all_ticket_page' %}'">tickets
+                </button>
+                <hr>
+                Nova Poshta:<br>
+                <button class="btn my_products" onclick="location.href='{% url 'update_cities_np' %}'">update cities
+                </button>
+                <button style="width: 200px;" class="btn my_products"
+                        onclick="location.href='{% url 'update_warehouses_np' %}'">update
+                    warehouses
+                </button>
+            </div>
+        {% endif %}
+
     </div>
     <script>
         function mail_sub() {

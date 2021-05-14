@@ -11,6 +11,7 @@ class SupportAnswer(forms.ModelForm):
     def save(self, *args, **kwargs):
         return super().save(*args, **kwargs)
 
+
 class TicketStatus(forms.ModelForm):
     class Meta:
         model = Ticket
