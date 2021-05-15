@@ -856,6 +856,7 @@ def import_products(request):
     return render(request, template)
 
 
+@group_required('Moder')
 def matrix(request):
     template = 'product/matrix_page.html'
     context = {}

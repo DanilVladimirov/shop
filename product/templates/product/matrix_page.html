@@ -1,7 +1,9 @@
-{% extends 'base_new.html' %}
-
-{% block content %}
-    <div class="all_matrix"></div>
+{% extends 'base.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/checkout-page.css">
+{% endblock %}
+{% block body %}
+    <div class="card_checkout"></div>
     <script>
         html_forms = ''
         $.ajax({
@@ -22,10 +24,10 @@
                         html_forms += "<input type = 'text' name = 'val' value = '" + _item.value + "'>"
                         html_forms += '<br>'
                     }
-                    html_forms += '<button type="submit">Изменить</button>'
+                    html_forms += '<button type="submit">Change</button>'
                     html_forms += '</form>'
                 }
-                $('.all_matrix').append(html_forms);
+                $('.card_checkout').append(html_forms);
             }
         })
     </script>
