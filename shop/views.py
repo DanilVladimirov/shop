@@ -58,5 +58,3 @@ def login_contact(request):
         return redirect('start_page')
 
 
-def test_mail(request):
-    return render(request,'mail-notify-user.html')

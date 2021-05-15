@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, HttpResponseRedirect, get_object_or_404, redirect, HttpResponse
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
@@ -13,7 +14,7 @@ import requests
 import datetime
 from dotenv import load_dotenv
 from product import convert_html
-
+from shop.service import group_required
 load_dotenv()
 import os
 from django.db.models import Sum
@@ -291,6 +292,7 @@ def del_category(request):
     return HttpResponse('')
 
 
+@group_required('Seller')
 def seller_products(request):
     if not request.user.groups.filter(name='Seller').exists():
         return redirect('start_page')
@@ -660,6 +662,7 @@ def checkout_page(request):
                   context={'products': basket, 'total_cost': total_cost, 'all_delivery': delivery})
 
 
+@group_required('Moder')
 def all_invoices(request):
     """ страница со всеми заказами """
     template = 'product/all_invoices.html'
@@ -684,6 +687,7 @@ def all_invoices(request):
     return render(request, template, context=context)
 
 
+@group_required('Moder', 'Courier')
 def change_invoice(request):
     """ смена статуса заказа """
     if request.method == 'POST':
@@ -733,6 +737,7 @@ def get_invoice(request, pk):
     return render(request, template, context=context)
 
 
+
 def edit_invoice(request, pk):
     template = 'product/invoice_edit_page.html'
     context = {}
@@ -776,6 +781,7 @@ def edit_invoice(request, pk):
     return render(request, template, context=context)
 
 
+@group_required('Moder')
 def create_promocode(request):
     template = 'product/create_promocode_page.html'
     form = forms.CreatePromo()
@@ -786,6 +792,7 @@ def create_promocode(request):
     return render(request, template, context={'form': form})
 
 
+@group_required('Moder')
 def edit_price_in_category(request):
     template = 'product/edit_price_in_category.html'
     context = {}
@@ -805,6 +812,7 @@ def edit_price_in_category(request):
     return render(request, template, context)
 
 
+@group_required('Moder')
 def export_products(request):
     template = 'product/export.html'
     context = {}
@@ -819,6 +827,7 @@ def export_products(request):
     return render(request, template, context)
 
 
+@group_required('Moder')
 def import_products(request):
     template = 'product/import.html'
     context = {}
@@ -1012,6 +1021,7 @@ def calc_delivery(request):
     return HttpResponse(json.dumps(data_response), content_type='application/json')
 
 
+@group_required('Moder')
 def update_cities_np(request):
     link = 'https://api.novaposhta.ua/v2.0/json/'
     headers = {'Content-Type': 'application/json', }
@@ -1036,6 +1046,7 @@ def update_cities_np(request):
     return HttpResponse(json.dumps(responce), content_type='application/json')
 
 
+@group_required('Moder')
 def update_warehouses_np(request):
     link = 'https://api.novaposhta.ua/v2.0/json/'
     data = (
@@ -1072,6 +1083,7 @@ def update_warehouses_np(request):
     return HttpResponse(json.dumps(responce), content_type='application/json')
 
 
+@group_required('Moder')
 def parser_rozetka_view(request):
     if request.method == 'GET':
         template = 'product/parser_rozetka.html'
@@ -1091,6 +1103,7 @@ def parser_rozetka_view(request):
         return HttpResponse(json.dumps(responce), content_type='applicaion/json')
 
 
+@group_required('Moder')
 def select_courier(request):
     if request.method == 'POST':
         data = request.POST
@@ -1105,7 +1118,7 @@ def select_courier(request):
                 courier = Group.objects.get(name='Courier').user_set.get(pk=data['courier'])
                 order.courier = courier
                 order.save()
-            responce = {'success': 'Сохранено'}
+            responce = {'success': 'Saved'}
         except models.CustomUser.DoesNotExist:
             responce = {'error': 'User not found'}
         except Order.DoesNotExist:
@@ -1114,6 +1127,7 @@ def select_courier(request):
         return HttpResponse(json.dumps(responce), content_type='applicaion/json')
 
 
+@group_required('Moder', 'Courier')
 def courier_page(request):
     context = {}
     context['all_invoices'] = Order.objects.filter(courier=request.user)

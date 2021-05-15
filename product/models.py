@@ -469,7 +469,7 @@ class OrderItemManager(models.Manager):
 
 class OrderItem(models.Model):
     # содержимое заказов
-    product = models.ForeignKey(Product, on_delete=models.PROTECT, default=None)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, default=None)
     id_good = models.IntegerField(default=1)
     title_good = models.CharField(default='Noname', max_length=300)
     cost = models.FloatField(default=1)

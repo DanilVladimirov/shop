@@ -3,9 +3,10 @@ from support.models import *
 from django.contrib.auth.decorators import login_required
 from support import forms
 from accounts import subscribe
+from shop.service import group_required
 
 
-@login_required(login_url='main_page')
+@login_required(login_url='login')
 def support_main_page(request):
     template = 'support/main_page.html'
     context = {}
@@ -28,6 +29,7 @@ def support_main_page(request):
     return render(request, template, context)
 
 
+@group_required('Moder')
 def all_ticket(request):
     type_tickets = request.GET.get('type', 'new')
     template = 'support/all_tickets.html'
@@ -37,6 +39,7 @@ def all_ticket(request):
     return render(request, template, context)
 
 
+@group_required('Moder')
 def answer_ticket_support(request, pk):
     template = 'support/answer_ticket.html'
     ticket = get_object_or_404(Ticket, pk=pk)
@@ -59,6 +62,7 @@ def answer_ticket_support(request, pk):
     return render(request, template, context)
 
 
+@login_required(login_url='login')
 def answer_ticket(request, pk):
     template = 'support/answer_ticket_user.html'
     ticket = get_object_or_404(Ticket, pk=pk)

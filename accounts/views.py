@@ -59,6 +59,7 @@ def is_user_exist(request):
         return HttpResponse(json.dumps(data_response), content_type='application/json')
 
 
+@login_required(login_url='login')
 def user_page(request):
     context = {}
     return render(request, 'user-page.html', context)
@@ -74,7 +75,7 @@ def mailing_promotions(request):
     return render(request, template)
 
 
-@login_required(login_url='main_page')
+@login_required(login_url='start_page')
 def subscribes(request):
     template = 'accounts/subscribe.html'
     context = {}

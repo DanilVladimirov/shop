@@ -43,7 +43,10 @@
         {% if request.user|has_group:"Seller" %}
             <button class="btn my_products" onclick="location.href='{% url 'seller_products' %}'">my products</button>
         {% endif %}
-
+        {% if request.user|has_group:"Courier" %}
+            <button class="btn my_products" onclick="location.href='{% url 'courier_page' %}'">invoices
+            </button>
+        {% endif %}
         {% if request.user|has_group:"Moder" %}
             <hr>
             Moder:
@@ -60,6 +63,8 @@
                 <button class="btn my_products" onclick="location.href='{% url 'parser_rozetka' %}'">parser
                 </button>
                 <button class="btn my_products" onclick="location.href='{% url 'all_ticket_page' %}'">tickets
+                </button>
+                <button class="btn my_products" onclick="location.href='{% url 'invoices_page' %}'">invoices
                 </button>
                 <hr>
                 Nova Poshta:<br>
