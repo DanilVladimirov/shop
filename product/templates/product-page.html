@@ -30,21 +30,12 @@
                         <div>
                             {% if product.stock == 0 %}
                                 <span style="color: darkgray;font-size: 30px;">out of stock :(</span><br>
-                                {% if is_sub_active_product %}
-                                    <button class="button-available" type="button"
-                                            onclick="subactivateproduct('{{ product.id }}', 'del')"
-                                            id='btn_subactivateproduct'>don't inform about the availability
-                                    </button>
-                                {% else %}
-                                    <button class="button-available" type="button"
-                                            onclick="subactivateproduct('{{ product.id }}', 'add')"
-                                            id='btn_subactivateproduct'>inform about the availability
-                                    </button>
-                                {% endif %}
+
                             {% else %}
                                 {% if product.old_price != 0 %}
                                     <span>old price: {{ product.old_price }}</span><br>
-                                    <span class="product_price" style="color: red;">{{ product.price|mul:rate_select_currency }} {{ disp_select_currency }}</span>
+                                    <span class="product_price"
+                                          style="color: red;">{{ product.price|mul:rate_select_currency }} {{ disp_select_currency }}</span>
                                     <br>
                                 {% else %}
                                     <span class="product_price">{{ product.price|mul:rate_select_currency }} {{ disp_select_currency }}</span>
@@ -60,64 +51,77 @@
 
                         </div>
                         <div class="button-buy-box">
-                            <form action="" method="post" style="float: right;">
-                                {% csrf_token %}
-                                {% if request|is_product_compare:product.id %}
-                                    <button class="button-buy" id="btn_compare" name="action"
-                                            value="remove_from_compare" style="max-width: 100px;">
-                                        <span>Compare✔</span></button>
+                            {% if product.stock == 0 %}
+                                {% if is_sub_active_product %}
+                                    <button class="button-available" type="button"
+                                            onclick="subactivateproduct('{{ product.id }}', 'del')"
+                                            id='btn_subactivateproduct'>don't inform about the availability
+                                    </button>
                                 {% else %}
-                                    <button class="button-buy" id="btn_compare" name="action" value="add_to_compare"
-                                            style="max-width: 100px;">
-                                        Compare
+                                    <button class="button-available" type="button"
+                                            onclick="subactivateproduct('{{ product.id }}', 'add')"
+                                            id='btn_subactivateproduct'>inform about the availability
                                     </button>
                                 {% endif %}
-                            </form>
-                            <button class="button-buy" type='submit' onclick="add2basket('{{ product.id }}')"
-                                    id="btn_add2basket">Buy
-                            </button>
-                            <div>
-                                {% if request.user.is_authenticated %}
-                                    {% if is_wishlist %}
-                                        <button style="display: table-row" class="button-unlike" type="button"
-                                                onclick="wishlist('{{ product.id }}', 'del')"
-                                                id='btn_wishlist'>
-                                            unlike
-                                        </button>
-                                        <button style="display: none" class="button-like" type="button"
-                                                onclick="wishlist('{{ product.id }}', 'add')"
-                                                id='btn_wishlist'>
-                                            like
-                                        </button>
+                            {% else %}
+                                <form action="" method="post" style="float: right;">
+                                    {% csrf_token %}
+                                    {% if request|is_product_compare:product.id %}
+                                        <button class="button-buy" id="btn_compare" name="action"
+                                                value="remove_from_compare" style="max-width: 100px;">
+                                            <span>Compare✔</span></button>
                                     {% else %}
-                                        <button style="display: none" class="button-unlike" type="button"
-                                                onclick="wishlist('{{ product.id }}', 'del')"
-                                                id='btn_wishlist'>
-                                            unlike
-                                        </button>
-                                        <button style="display: table-row" class="button-like" type="button"
-                                                onclick="wishlist('{{ product.id }}', 'add')"
-                                                id='btn_wishlist'>
-                                            like
+                                        <button class="button-buy" id="btn_compare" name="action" value="add_to_compare"
+                                                style="max-width: 100px;">
+                                            Compare
                                         </button>
                                     {% endif %}
-                                    {% if is_sub_edit_price %}
-                                        <button class="button-buy" style="width: 120px;" type="button"
-                                                onclick="subeditprice('{{ product.id }}', 'del')"
-                                                id='btn_subeditprice'>
-                                            Unfollow price
-                                        </button>
-                                    {% else %}
-                                        <button class="button-buy" style="width: 120px;" type="button"
-                                                onclick="subeditprice('{{ product.id }}', 'add')"
-                                                id='btn_subeditprice'>
-                                            Follow price
-                                        </button>
+                                </form>
+                                <button class="button-buy" type='submit' onclick="add2basket('{{ product.id }}')"
+                                        id="btn_add2basket">Buy
+                                </button>
+                                <div>
+                                    {% if request.user.is_authenticated %}
+                                        {% if is_wishlist %}
+                                            <button style="display: table-row" class="button-unlike" type="button"
+                                                    onclick="wishlist('{{ product.id }}', 'del')"
+                                                    id='btn_wishlist'>
+                                                unlike
+                                            </button>
+                                            <button style="display: none" class="button-like" type="button"
+                                                    onclick="wishlist('{{ product.id }}', 'add')"
+                                                    id='btn_wishlist'>
+                                                like
+                                            </button>
+                                        {% else %}
+                                            <button style="display: none" class="button-unlike" type="button"
+                                                    onclick="wishlist('{{ product.id }}', 'del')"
+                                                    id='btn_wishlist'>
+                                                unlike
+                                            </button>
+                                            <button style="display: table-row" class="button-like" type="button"
+                                                    onclick="wishlist('{{ product.id }}', 'add')"
+                                                    id='btn_wishlist'>
+                                                like
+                                            </button>
+                                        {% endif %}
+                                        {% if is_sub_edit_price %}
+                                            <button class="button-buy" style="width: 120px;" type="button"
+                                                    onclick="subeditprice('{{ product.id }}', 'del')"
+                                                    id='btn_subeditprice'>
+                                                Unfollow price
+                                            </button>
+                                        {% else %}
+                                            <button class="button-buy" style="width: 120px;" type="button"
+                                                    onclick="subeditprice('{{ product.id }}', 'add')"
+                                                    id='btn_subeditprice'>
+                                                Follow price
+                                            </button>
+                                        {% endif %}
+
                                     {% endif %}
-
-                                {% endif %}
-                            </div>
-
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
 
@@ -165,7 +169,8 @@
                         <img style="width: 1200px;height: 400px;border-radius: 10px;object-fit: cover;}"
                              src="{{ image.image.url }}">
                         {% if product.author.id == request.user.id %}
-                            <br><button style="float: right" onclick="del_img({{ image.id }})">delete</button>
+                            <br>
+                            <button style="float: right" onclick="del_img({{ image.id }})">delete</button>
                         {% endif %}
                     </div>
                 {% endfor %}
