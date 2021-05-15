@@ -41,7 +41,7 @@ class Attributes(models.Model):
     title = models.CharField(max_length=200, default="title")
 
     def __str__(self):
-        return f'name: {self.name}'
+        return f'name: {self.title}'
 
 
 class ProductAttrs(models.Model):
